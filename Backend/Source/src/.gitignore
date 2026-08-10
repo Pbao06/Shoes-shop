@@ -1,0 +1,44 @@
+## Visual Studio / VS Code
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ASP.NET Core / Build Results
+bin/
+obj/
+publish/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+
+## Database Local files (Tránh đẩy database thật hoặc file log lên)
+*.mdf
+*.ldf
+*.db
+*.sqlite
+*.sqlite3
+
+## User-specific configuration (File appsettings cá nhân chứa connection string hoặc secret key)
+appsettings.Development.json
+appsettings.Local.json
+.env
+
+## OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+## Node.js / Front-end (Nếu dự án có chạy React/Angular/Vue chung hoặc thư mục wwwroot/lib)
+node_modules/
+npm-debug.log*
+yarn-error.log*
