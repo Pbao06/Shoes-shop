@@ -79,6 +79,7 @@ builder.Services.AddScoped<IBrandService,BrandService>();
 // customer api 
 builder.Services.AddScoped<IC_ProductService,C_ProductService>();
 builder.Services.AddScoped<IC_CartService,C_CartService>();
+builder.Services.AddScoped<IC_OrderService,C_OrderService>();
 // builder.Services.AddScoped<IC_CartItemService,C_CartItemService>();
 
 var app = builder.Build();
