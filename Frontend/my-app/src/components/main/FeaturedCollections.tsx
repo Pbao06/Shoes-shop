@@ -1,10 +1,12 @@
 'use client'
 
-import Image from 'next/image'
+import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
+import womenCollection from '@/assets/women-collection.png'
+import menCollection from '@/assets/men-collection.png'
 
 type Collection = {
-  image: string
+  image: string | StaticImageData
   title: string
   description: string
   link: string
@@ -13,14 +15,14 @@ type Collection = {
 
 const collections: Collection[] = [
   {
-    image: '/assets/women-collection.png',
+    image: womenCollection,
     title: 'Women',
     description: 'A study in quiet structure and softened form.',
     link: '#women',
     alt: 'Model wearing sculptural black and ivory tailoring in a gallery interior',
   },
   {
-    image: '/assets/men-collection.png',
+    image: menCollection,
     title: 'Men',
     description: 'Considered layers for a changing season.',
     link: '#men',
@@ -44,12 +46,12 @@ function CollectionItem({ collection, index }: { collection: Collection; index: 
       </Link>
       <div className="mt-5 flex items-start justify-between gap-6">
         <div>
-          <h3 className="font-serif text-3xl capitalize tracking-[-0.02em] text-foreground">{collection.title}</h3>
-          <p className="mt-2 max-w-[18rem] text-sm leading-6 text-muted-foreground">{collection.description}</p>
+          <h3 className="font-serif text-3xl capitalize tracking-[-0.02em] text-[#f3ede2]">{collection.title}</h3>
+          <p className="mt-2 max-w-[18rem] text-sm leading-6 text-[#f3ede2]/60">{collection.description}</p>
         </div>
         <Link
           href={collection.link}
-          className="mt-2 shrink-0 border-b border-foreground/40 pb-1 text-[10px] font-medium tracking-[0.16em] text-foreground transition-colors hover:border-foreground"
+          className="mt-2 shrink-0 border-b border-[#f3ede2]/40 pb-1 text-[10px] font-medium tracking-[0.16em] text-[#f3ede2] transition-colors hover:border-[#f3ede2]"
         >
           EXPLORE COLLECTION
         </Link>
@@ -60,14 +62,14 @@ function CollectionItem({ collection, index }: { collection: Collection; index: 
 
 export function FeaturedCollections() {
   return (
-    <section aria-labelledby="featured-heading" className="bg-background px-6 py-24 md:px-12 md:py-36 lg:px-20">
+    <section aria-labelledby="featured-heading" className="bg-[#16140f] px-6 py-24 md:px-12 md:py-36 lg:px-20">
       <div className="mx-auto max-w-[1400px]">
         <header className="max-w-xl">
-          <p className="text-[10px] font-medium tracking-[0.24em] text-muted-foreground">FEATURED COLLECTIONS</p>
-          <h2 id="featured-heading" className="mt-5 font-serif text-5xl leading-[0.95] tracking-[-0.04em] text-foreground md:text-7xl">
+          <p className="text-[10px] font-medium tracking-[0.24em] text-[#f3ede2]/45">FEATURED COLLECTIONS</p>
+          <h2 id="featured-heading" className="mt-5 font-serif text-5xl leading-[0.95] tracking-[-0.04em] text-[#f3ede2] md:text-7xl">
             The new season
           </h2>
-          <p className="mt-6 max-w-sm text-sm leading-6 text-muted-foreground">
+          <p className="mt-6 max-w-sm text-sm leading-6 text-[#f3ede2]/60">
             A refined wardrobe shaped by texture, proportion, and the light of the season.
           </p>
         </header>

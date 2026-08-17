@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+// import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { Search, ShoppingBag, User, type LucideIcon } from "lucide-react";
 
 /**
@@ -32,7 +33,7 @@ export function Navbar() {
             so the bar stays readable and uncluttered. */}
         <div className="flex flex-1 items-center justify-start md:justify-center">
           <Link
-            to="/"
+            href="/home"
             aria-label="Maison — home"
             className="font-serif text-[1.25rem] tracking-[0.18em] text-[#1a1714] md:text-[1.5rem]"
           >
@@ -99,7 +100,7 @@ function IconButton({
 }
 
 const NAV_ITEMS: { label: string; href: string }[] = [
-  { label: "Home", href: "/" },
+  { label: "Home", href: "/home" },
   { label: "Collections", href: "/collections" },
   { label: "About", href: "/about" },
 ];

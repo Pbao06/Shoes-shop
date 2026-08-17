@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { forwardRef } from "react";
 import type { LucideIcon, LucideProps } from "lucide-react";
 import type { ReactNode } from "react";
@@ -33,7 +33,7 @@ export function Footer() {
           {/* Left — brand */}
           <div className="md:col-span-5">
             <Link
-              to="/"
+              href="/home"
               aria-label="Maison — home"
               className="font-serif text-[1.25rem] tracking-[0.18em] text-[#f3ede2] md:text-[1.5rem]"
             >
