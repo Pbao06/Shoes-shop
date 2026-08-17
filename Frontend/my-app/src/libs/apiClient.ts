@@ -37,6 +37,52 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Extracts a human-readable message from a failed API response.
+ *
+ * The backend can return either its own envelope:
+ *   { success: false, message: "Họ và tên là bắt buộc.", statusCode: 400 }
+ *
+ * or ASP.NET's automatic `ValidationProblemDetails` (returned BEFORE our
+ * ExceptionMiddleware runs, when [ApiController] model validation fails):
+ *   { title: "One or more validation errors occurred.",
+ *     errors: { "Password": ["The field Password must be ... length of '6'."] } }
+ */
+function getErrorMessage(data: unknown, fallback: string): string {
+  if (typeof data === "object" && data !== null) {
+    const obj = data as Record<string, unknown>;
+
+    if (typeof obj.message === "string" && obj.message.length > 0) {
+      return obj.message;
+    }
+
+    const errors = obj.errors;
+    if (errors !== null && typeof errors === "object") {
+      const errorMessages = Object.values(errors)
+        .flatMap((fieldErrors) =>
+          Array.isArray(fieldErrors)
+            ? fieldErrors.filter(
+                (e): e is string => typeof e === "string",
+              )
+            : typeof fieldErrors === "string"
+              ? [fieldErrors]
+              : [],
+        )
+        .filter((e) => e.length > 0);
+
+      if (errorMessages.length > 0) {
+        return errorMessages.join("; ");
+      }
+    }
+
+    if (typeof obj.title === "string" && obj.title.length > 0) {
+      return obj.title;
+    }
+  }
+
+  return fallback;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 let tokenProvider: (() => string | null) | null = null;
@@ -113,13 +159,20 @@ async function request<T>(
       data = await response.json();
     }
 
-    const message =
-      typeof data === "object" &&
-      data !== null &&
-      "message" in data &&
-      typeof data.message === "string"
-        ? data.message
-        : `Request failed with status ${response.status}`;
+    // Log the original response body so the exact server-side failure is
+    // visible in the browser console during development.
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[apiClient] Request failed:", {
+        status: response.status,
+        url: buildUrl(path, options.params),
+        errorData: data,
+      });
+    }
+
+    const message = getErrorMessage(
+      data,
+      `Request failed with status ${response.status}`,
+    );
 
     throw new ApiError(response.status, message, data);
   }

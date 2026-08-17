@@ -23,7 +23,8 @@ export default function LoginPage() {
   const handleSubmit = useCallback(
     async (data: { email: string; password: string }) => {
       await login(data);
-      router.push("/home");
+      
+      // router.push("/home");
     },
     [login, router],
   );

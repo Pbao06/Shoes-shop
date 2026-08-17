@@ -30,6 +30,7 @@ export function useLogin() {
     try {
       const response = await authService.login(payload);
       setData(response.data);
+      console.log("login tu server gui ve : ",response);
       return response.data;
     } catch (err) {
       const message =
@@ -61,6 +62,7 @@ export function useRegister() {
     try {
       const response = await authService.register(payload);
       setData(response.data);
+      console.log(" Data get is : ",response.data);
       return response.data;
     } catch (err) {
       const message =

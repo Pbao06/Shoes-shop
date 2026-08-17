@@ -1,5 +1,20 @@
 import { useState, type FormEvent } from "react";
 
+interface RegisterFormProps {
+  /** Called with the submit payload when the form is submitted. */
+  onSubmit: (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => void | Promise<void>;
+  /** Disables the submit button while the request is in flight. */
+  isLoading?: boolean;
+  /** Optional server/API error message rendered above the button. */
+  error?: string | null;
+}
+
 /**
  * RegisterForm — the sign-up surface, designed to live inside <AuthLayout />.
  *
@@ -9,18 +24,57 @@ import { useState, type FormEvent } from "react";
  * pills, gradients, or shadows. The cream background and ink text come from
  * AuthLayout; this component only contributes the form content.
  *
- * UI only — no auth logic, API, or session handling (intentional).
+ * Presentational only: it collects the fields locally and delegates the
+ * API call to the `onSubmit` prop so the parent page can wire in the
+ * `useRegister` hook without coupling this UI to a specific hook.
  */
-export function RegisterForm() {
+export function RegisterForm({
+  onSubmit,
+  isLoading = false,
+  error = null,
+}: RegisterFormProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // Auth wiring is intentionally deferred.
+    setValidationError(null);
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+
+    if (trimmedFirstName.length < 2) {
+      setValidationError("First Name must be at least 2 characters.");
+      return;
+    }
+    if (trimmedLastName.length < 2) {
+      setValidationError("Last Name must be at least 2 characters.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      setValidationError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setValidationError("Password and Confirm Password do not match.");
+      return;
+    }
+
+    void onSubmit({
+      firstName: trimmedFirstName,
+      lastName: trimmedLastName,
+      email: email.trim(),
+      password,
+      confirmPassword,
+    });
   }
 
   return (
@@ -119,12 +173,27 @@ export function RegisterForm() {
           />
         </label>
 
+        {/* Client-side validation error */}
+        {validationError && (
+          <p className="text-[13px] leading-relaxed text-red-600" role="alert">
+            {validationError}
+          </p>
+        )}
+
+        {/* API error */}
+        {error && (
+          <p className="text-[13px] leading-relaxed text-red-600" role="alert">
+            {error}
+          </p>
+        )}
+
         {/* Primary action — rectangular, sharp corners, no shadow */}
         <button
           type="submit"
-          className="mt-2 w-full rounded-none bg-[#1a1714] py-4 text-[12px] font-medium uppercase tracking-[0.2em] text-[#fcfbf8] transition-colors hover:bg-[#1a1714]/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8]"
+          disabled={isLoading}
+          className="mt-2 w-full rounded-none bg-[#1a1714] py-4 text-[12px] font-medium uppercase tracking-[0.2em] text-[#fcfbf8] transition-colors hover:bg-[#1a1714]/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Create Account
+          {isLoading ? "Creating account..." : "Create Account"}
         </button>
       </form>
 
