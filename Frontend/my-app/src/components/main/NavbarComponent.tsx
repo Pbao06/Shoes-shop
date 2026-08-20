@@ -42,7 +42,7 @@ export function Navbar() {
         </div>
 
         {/* Right — icon cluster. Always visible. */}
-        <div className="flex flex-1 items-center justify-end gap-4 sm:gap-6">
+        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <IconButton href="/search" label="Search" icon={Search} />
           <IconButton href="/cart" label="Cart" icon={ShoppingBag} />
           <IconButton href="/login" label="Account" icon={User} />
@@ -63,12 +63,12 @@ function NavLinks() {
     <ul className="flex items-center gap-7 lg:gap-10">
       {NAV_ITEMS.map(({ label, href }) => (
         <li key={label}>
-          <a
+          <Link
             href={href}
             className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 underline-offset-8 transition-colors hover:text-[#1a1714] hover:underline"
           >
             {label}
-          </a>
+          </Link>
         </li>
       ))}
     </ul>
@@ -89,19 +89,19 @@ function IconButton({
   icon: LucideIcon;
 }) {
   return (
-    <a
+    <Link
       href={href}
       aria-label={label}
       className="flex h-9 w-9 items-center justify-center text-[#1a1714]/80 transition-colors hover:text-[#1a1714] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8]"
     >
       <Icon strokeWidth={1.4} className="h-[18px] w-[18px]" />
-    </a>
+    </Link>
   );
 }
 
 const NAV_ITEMS: { label: string; href: string }[] = [
   { label: "Home", href: "/home" },
-  { label: "Collections", href: "/collections" },
+  { label: "Collections", href: "/shop" },
   { label: "About", href: "/about" },
 ];
 

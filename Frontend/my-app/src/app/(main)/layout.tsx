@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/main/NavbarComponent";
 import { Footer } from "@/components/main/FooterComponent";
+import { CartProvider } from "@/context/CartContext";
 
 export default function MainLayout({
   children,
@@ -7,10 +8,12 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-[#fcfbf8]">
-      <Navbar />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <CartProvider>
+      <div className="flex min-h-screen flex-col bg-[#fcfbf8]">
+        <Navbar />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
+    </CartProvider>
   );
 }

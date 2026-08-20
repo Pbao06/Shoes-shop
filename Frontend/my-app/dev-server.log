@@ -1,0 +1,114 @@
+
+> my-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.13:3000
+- Environments: .env.local
+✓ Ready in 1554ms
+✓ Running next.config.ts took 225ms
+
+ GET /shop 200 in 993ms (next.js: 510ms, application-code: 483ms)
+[browser] Image with src "/_next/static/media/women-collection.0gf-z0vygd0tt.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+✓ Compiled in 276ms
+[browser] ./src/components/main/ShopCollection.tsx:1:22
+Error: Expression expected
+> 1 | http://localhost:3000
+    |                      ^
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+[browser] ./src/components/main/ShopCollection.tsx:1:22
+Error: Expression expected
+> 1 | http://localhost:3000
+    |                      ^
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+✓ Compiled in 297ms
+ GET /shop 200 in 214ms (next.js: 31ms, application-code: 183ms)
+✓ Compiled in 3.1s
+[browser] ./src/components/main/ShopCollection.tsx:1:19
+Error: You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+> 1 | import { useMemo, useState } from "react"
+    |                   ^^^^^^^^
+  2 | import womenCollection from "@/assets/women-collection.png"
+  3 | import menCollection from "@/assets/men-collection.png"
+  4 | import heroCampaign from "@/assets/hero-campaign.jpg"
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+[browser] ./src/components/main/ShopCollection.tsx:2:19
+Error: You're importing a module that depends on `useState` into a React Server Component module. This API is only available in Client Components. To fix, mark the file (or its parent) with the `"use client"` directive.
+    Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  1 |
+> 2 | import { useMemo, useState } from "react"
+    |                   ^^^^^^^^
+  3 | import womenCollection from "@/assets/women-collection.png"
+  4 | import menCollection from "@/assets/men-collection.png"
+  5 | import heroCampaign from "@/assets/hero-campaign.jpg"
+
+Ecmascript file had an error
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+✓ Compiled in 473ms
+ GET /shop 200 in 247ms (next.js: 83ms, application-code: 164ms)
+ GET /shop 200 in 205ms (next.js: 14ms, application-code: 191ms)
+✓ Compiled in 2.6s
+ GET /shop 200 in 1049ms (next.js: 186ms, application-code: 862ms)
+✓ Compiled in 573ms
+[browser] ./src/components/main/ShopCollection.tsx:32:1
+Error: Expression expected
+  30 |   { name: "Polished City Boot", category: "Women", brand: "Atelier", price: "$610", image:...
+  31 |
+> 32 | const sortOptions = ["Featured", "Price: low to high", "Price: high to low"] as const
+     | ^^^^^
+  33 | type SortOption = (typeof sortOptions)[number]
+  34 |
+  35 | export default function ShopCollection() {
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+✓ Compiled in 421ms
+[browser] ./src/components/main/ShopCollection.tsx:74:26
+Error: Expected '</', got '('
+  72 |                 aria-pressed={active}
+  73 |                 className={`group relative text-[11px] uppercase tracking-[0.22em] transit...
+> 74 |                 onClick={() => setActiveCategory(category)}
+     |                          ^
+  75 |                 aria-pressed={active}
+  76 |                 className={`group relative text-[11px] uppercase tracking-[0.22em] transit...
+  77 |                   active ? "text-[#1a1714]" : "text-[#9a9189] hover:text-[#1a1714]"
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/main/ShopCollection.tsx
+    ./src/app/(main)/shop/page.tsx 
+✓ Compiled in 333ms
+ GET /shop 200 in 511ms (next.js: 98ms, application-code: 414ms)
+ GET /shop 200 in 275ms (next.js: 56ms, application-code: 220ms)
+[?25h
