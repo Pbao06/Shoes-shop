@@ -16,41 +16,62 @@ public class C_ProductService:IC_ProductService
         _context = context;
     }
 
-    public async Task<List<ProductPublicDto>> GetPublicProductsAsync()
+   public async Task<List<ProductPublicDto>> GetPublicProductsAsync(string? category = null, string? sortBy = null, int page = 1, int pageSize = 12)
+{
+    var query = _context.Products
+        .AsNoTracking()
+        .Where(p => p.IsActive)
+        .Include(p => p.Category)
+        .Include(p => p.Brand)
+        .Include(p => p.Images)
+        .Include(p => p.Variants)
+            .ThenInclude(v => v.Size)
+        .AsQueryable();
+
+    // 1. Lọc theo Category
+    if (!string.IsNullOrEmpty(category) && category != "All")
     {
-        var products = await _context.Products
-            .AsNoTracking()
-            .Where(p => p.IsActive)
-            .Include(p => p.Category)
-            .Include(p => p.Brand)
-            .Include(p => p.Images)
-            .Include(p => p.Variants)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
-        return products.Select(p => new ProductPublicDto
-        {
-            Id = p.Id,
-            Name = p.Name,
-            Slug = p.Slug,
-            Description = p.Description,
-            Price = p.Price,
-            SalePrice = p.SalePrice,
-            BrandName = p.Brand?.Name,
-            CategoryName = p.Category?.Name,
-            PrimaryImageUrl = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
-            PrimaryImageAlt = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.AltText).FirstOrDefault(),
-            TotalStock = p.Variants.Sum(v => v.StockQuantity),
-            IsActive = p.IsActive,
-            CreatedAt = p.CreatedAt,
-            Brand = p.Brand?.Name ?? string.Empty,
-            Category = p.Category?.Name ?? string.Empty,
-            PriceDisplay = FormatPrice(p.SalePrice ?? p.Price),
-            Color = p.Color,
-            Image = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
-            Sizes = p.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
-            Gallery = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
-        }).ToList();
+        query = query.Where(p => p.Category != null && p.Category.Name == category);
     }
+
+    // 2. Sắp xếp theo giá số (decimal) hoặc mới nhất
+    query = sortBy switch
+    {
+        "Price: low to high" => query.OrderBy(p => p.SalePrice ?? p.Price),
+        "Price: high to low" => query.OrderByDescending(p => p.SalePrice ?? p.Price),
+        _ => query.OrderByDescending(p => p.CreatedAt)
+    };
+
+    // 3. Phân trang
+    var products = await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    // 4. Map dữ liệu trả về DTO
+    return products.Select(p => new ProductPublicDto
+    {
+        Id = p.Id,
+        Name = p.Name,
+        Slug = p.Slug,
+        Description = p.Description,
+        Price = p.Price,
+        SalePrice = p.SalePrice,
+        BrandName = p.Brand?.Name,
+        CategoryName = p.Category?.Name,
+        PrimaryImageUrl = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+        PrimaryImageAlt = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.AltText).FirstOrDefault(),
+        TotalStock = p.Variants.Sum(v => v.StockQuantity),
+        IsActive = p.IsActive,
+        CreatedAt = p.CreatedAt,
+        Brand = p.Brand?.Name ?? string.Empty,
+        Category = p.Category?.Name ?? string.Empty,
+        Color = p.Color,
+        Image = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+        Sizes = p.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
+        Gallery = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
+    }).ToList();
+}
 
     public async Task<ProductDetailDto?> GetProductDetailsAsync(int id)
     {
