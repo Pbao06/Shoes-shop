@@ -25,4 +25,15 @@ public class CheckoutDto
     /// Phương thức thanh toán: "COD", "CreditCard", "BankTransfer", v.v.
     /// </summary>
     public string PaymentMethod { get; set; } = "COD";
+
+    // ===== Trường nhận từ Frontend (Checkout-page) =====
+    // Frontend gửi họ và tên riêng biệt, Backend gộp thành RecipientName.
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    // Email người đặt (Frontend có thu thập, Backend chưa lưu vào Address).
+    public string? Email { get; set; }
+    // Địa chỉ đơn giản từ Frontend, tương ứng với Street.
+    public string? Address { get; set; }
+    // Phương thức thanh toán từ Frontend ('card', 'paypal', ...).
+    public string? Payment { get; set; }
 }

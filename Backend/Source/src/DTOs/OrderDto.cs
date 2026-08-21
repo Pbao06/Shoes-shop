@@ -29,6 +29,7 @@ public class AddressDto
     public string State { get; set; } = string.Empty;
     public string PostalCode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
+    public string? Email { get; set; }
 }
 
 /// <summary>
@@ -40,6 +41,8 @@ public class OrderItemDto
     public int ProductVariantId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string SizeName { get; set; } = string.Empty;
+    public string? Color { get; set; }
+    public string? ImageUrl { get; set; }
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }

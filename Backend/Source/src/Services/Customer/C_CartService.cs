@@ -218,6 +218,9 @@ public class C_CartService : IC_CartService
                 .ThenInclude(v => v.Product!)
                     .ThenInclude(p => p.Images)
             .Include(ci => ci.ProductVariant!)
+                .ThenInclude(v => v.Product!)
+                    .ThenInclude(p => p.Brand)
+            .Include(ci => ci.ProductVariant!)
                 .ThenInclude(v => v.Size)
             .ToListAsync();
 
@@ -231,6 +234,8 @@ public class C_CartService : IC_CartService
                 .Select(i => i.ImageUrl)
                 .FirstOrDefault(),
             SizeName = ci.ProductVariant?.Size?.Name ?? string.Empty,
+            Brand = ci.ProductVariant?.Product?.Brand?.Name ?? string.Empty,
+            Color = ci.ProductVariant?.Product?.Color,
             UnitPrice = ci.UnitPrice,
             Quantity = ci.Quantity,
         }).ToList();

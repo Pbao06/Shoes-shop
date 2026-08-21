@@ -11,6 +11,7 @@ using src.Services.AdminInterface;
 using src.Services.Admin;
 using src.Services.Customer;
 using src.Services.Interface;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -118,6 +119,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Tự động Seed dữ liệu mẫu khi khởi chạy (bỏ qua nếu DB đã có sản phẩm)
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await context.Database.EnsureCreatedAsync();
+    await DbSeeder.SeedAsync(context);
+}
 
 app.Run();
 

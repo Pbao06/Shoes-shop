@@ -61,19 +61,29 @@ public class C_OrderService : IC_OrderService
             }
             else
             {
-                // Tạo địa chỉ mới từ thông tin người dùng nhập trong form
-                ValidateShippingAddress(dto);
+                // Chuẩn hóa dữ liệu từ Frontend:
+                // - Gộp firstName + lastName thành RecipientName (nếu không gửi sẵn).
+                // - Map trường Address (đơn giản) sang Street.
+                // - Tự động sinh PhoneNumber mặc định nếu Frontend chưa thu thập.
+                var recipientName = dto.RecipientName
+                    ?? $"{dto.FirstName} {dto.LastName}".Trim();
+                var street = dto.Street ?? dto.Address ?? string.Empty;
+                var phoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber)
+                    ? "0000000000"
+                    : dto.PhoneNumber;
+
+                ValidateShippingAddress(recipientName, street, dto.City, dto.Country);
 
                 address = new Address
                 {
                     UserId = userId,
-                    RecipientName = dto.RecipientName!,
-                    PhoneNumber = dto.PhoneNumber!,
-                    Street = dto.Street!,
-                    City = dto.City!,
-                    State = dto.State!,
-                    PostalCode = dto.PostalCode!,
-                    Country = dto.Country!,
+                    RecipientName = recipientName,
+                    PhoneNumber = phoneNumber,
+                    Street = street,
+                    City = dto.City ?? string.Empty,
+                    State = dto.State ?? string.Empty,
+                    PostalCode = dto.PostalCode ?? string.Empty,
+                    Country = dto.Country ?? string.Empty,
                     IsDefault = false,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -146,11 +156,17 @@ public class C_OrderService : IC_OrderService
             _context.OrderItems.AddRange(orderItems);
 
             // ====== 7. Tạo bản ghi Payment ======
+            // Chuẩn hóa PaymentMethod: ưu tiên trường Payment từ Frontend ('card', 'paypal', ...),
+            // nếu không có thì dùng PaymentMethod (mặc định "COD").
+            var paymentMethod = !string.IsNullOrWhiteSpace(dto.Payment)
+                ? dto.Payment
+                : (dto.PaymentMethod ?? "COD");
+
             var payment = new Payment
             {
                 OrderId = order.Id,
-                PaymentMethod = dto.PaymentMethod,
-                Status = dto.PaymentMethod == "COD" ? "Pending" : "Paid",
+                PaymentMethod = paymentMethod,
+                Status = paymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase) ? "Pending" : "Paid",
                 Amount = order.TotalAmount,
                 TransactionId = null,
                 CreatedAt = DateTime.UtcNow
@@ -184,12 +200,13 @@ public class C_OrderService : IC_OrderService
         var order = await _context.Orders
             .AsNoTracking()
             .Include(o => o.Address)
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.ProductVariant)
-                    .ThenInclude(v => v!.Size)
-            .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(v => v!.Size)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
 
         if (order == null)
             throw new NotFoundError("Không tìm thấy đơn hàng");
@@ -206,12 +223,13 @@ public class C_OrderService : IC_OrderService
             .AsNoTracking()
             .Where(o => o.UserId == userId)
             .Include(o => o.Address)
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.ProductVariant)
-                    .ThenInclude(v => v!.Size)
-            .OrderByDescending(o => o.CreatedAt)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductVariant)
+                        .ThenInclude(v => v!.Size)
+                .OrderByDescending(o => o.CreatedAt)
             .ToListAsync();
 
         return orders.Select(MapToOrderDto).ToList();
@@ -279,17 +297,15 @@ public class C_OrderService : IC_OrderService
     /// <summary>
     /// Kiểm tra tính hợp lệ của địa chỉ giao hàng mới nhập từ form.
     /// </summary>
-    private void ValidateShippingAddress(CheckoutDto dto)
+    private void ValidateShippingAddress(string recipientName, string street, string? city, string? country)
     {
-        if (string.IsNullOrWhiteSpace(dto.RecipientName))
+        if (string.IsNullOrWhiteSpace(recipientName))
             throw new ValidationError("Vui lòng nhập tên người nhận");
-        if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
-            throw new ValidationError("Vui lòng nhập số điện thoại");
-        if (string.IsNullOrWhiteSpace(dto.Street))
+        if (string.IsNullOrWhiteSpace(street))
             throw new ValidationError("Vui lòng nhập địa chỉ cụ thể");
-        if (string.IsNullOrWhiteSpace(dto.City))
+        if (string.IsNullOrWhiteSpace(city))
             throw new ValidationError("Vui lòng nhập thành phố");
-        if (string.IsNullOrWhiteSpace(dto.Country))
+        if (string.IsNullOrWhiteSpace(country))
             throw new ValidationError("Vui lòng nhập quốc gia");
     }
 
@@ -334,6 +350,11 @@ public class C_OrderService : IC_OrderService
                 ProductVariantId = oi.ProductVariantId,
                 ProductName = oi.Product?.Name ?? string.Empty,
                 SizeName = oi.ProductVariant?.Size?.Name ?? string.Empty,
+                Color = oi.Product?.Color,
+                ImageUrl = oi.Product?.Images
+                    .OrderByDescending(i => i.IsPrimary)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault(),
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.TotalPrice
