@@ -10,6 +10,7 @@ public class Product
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public decimal? SalePrice { get; set; }
+    public string? Color { get; set; }
     public bool IsActive { get; set; } = true;
     public int BrandId { get; set; }
     public int CategoryId { get; set; }

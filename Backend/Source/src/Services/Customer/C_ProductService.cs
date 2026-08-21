@@ -1,3 +1,4 @@
+// Empty file to start analysis - will be filled in later
 using Microsoft.EntityFrameworkCore;
 using src.Data;
 using src.Models;
@@ -22,6 +23,7 @@ public class C_ProductService:IC_ProductService
             .Where(p => p.IsActive)
             .Include(p => p.Category)
             .Include(p => p.Brand)
+            .Include(p => p.Images)
             .Include(p => p.Variants)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
@@ -35,9 +37,18 @@ public class C_ProductService:IC_ProductService
             SalePrice = p.SalePrice,
             BrandName = p.Brand?.Name,
             CategoryName = p.Category?.Name,
+            PrimaryImageUrl = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+            PrimaryImageAlt = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.AltText).FirstOrDefault(),
             TotalStock = p.Variants.Sum(v => v.StockQuantity),
             IsActive = p.IsActive,
-            CreatedAt = p.CreatedAt
+            CreatedAt = p.CreatedAt,
+            Brand = p.Brand?.Name ?? string.Empty,
+            Category = p.Category?.Name ?? string.Empty,
+            PriceDisplay = FormatPrice(p.SalePrice ?? p.Price),
+            Color = p.Color,
+            Image = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+            Sizes = p.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
+            Gallery = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
         }).ToList();
     }
 
@@ -51,6 +62,8 @@ public class C_ProductService:IC_ProductService
             .Include(p => p.Variants)
                 .ThenInclude(v => v.Size)
             .Include(p => p.Images)
+            .Include(p => p.Reviews)
+                .ThenInclude(r => r.User)
             .FirstOrDefaultAsync();
 
         if (product == null)
@@ -89,8 +102,33 @@ public class C_ProductService:IC_ProductService
                 Price = v.Price,
                 SalePrice = v.SalePrice
             }).ToList(),
-            
+            Reviews = product.Reviews.Select(r => new ReviewDto
+            {
+                Id = r.Id,
+                UserId = r.UserId,
+                UserName = string.IsNullOrEmpty(r.User?.FirstName) && string.IsNullOrEmpty(r.User?.LastName)
+                    ? r.User?.UserName
+                    : $"{r.User?.FirstName} {r.User?.LastName}".Trim(),
+                Rating = r.Rating,
+                Comment = r.Comment,
+                CreatedAt = r.CreatedAt
+            }).ToList(),
+            AverageRating = product.Reviews.Count > 0
+                ? product.Reviews.Average(r => r.Rating)
+                : 0,
+            Brand = product.Brand?.Name ?? string.Empty,
+            Category = product.Category?.Name ?? string.Empty,
+            PriceDisplay = FormatPrice(product.SalePrice ?? product.Price),
+            Color = product.Color,
+            Image = product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+            Sizes = product.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
+            Gallery = product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
         };
+    }
+
+    private static string FormatPrice(decimal price)
+    {
+        return $"${price:0}";
     }
 }
 

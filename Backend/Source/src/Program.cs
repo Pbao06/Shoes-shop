@@ -105,7 +105,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Only redirect to HTTPS when an HTTPS port is actually configured.
+// When running with the "http" launch profile (no HTTPS port), this
+// middleware would fail to determine the redirect port and could
+// interfere with HTTP-only API calls from the frontend.
+if (!string.IsNullOrEmpty(builder.Configuration["HttpsPort"]))
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("FrontendDev");
 app.UseAuthentication();
 app.UseAuthorization();

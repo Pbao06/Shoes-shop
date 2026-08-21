@@ -6,6 +6,7 @@ public class CreateProductDto
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public decimal? SalePrice { get; set; }
+    public string? Color { get; set; }
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
 }
@@ -17,6 +18,7 @@ public class ProductDto
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public decimal? SalePrice { get; set; }
+    public string? Color { get; set; }
     public bool IsActive { get; set; } = true;
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
@@ -32,9 +34,20 @@ public class ProductPublicDto
     public decimal? SalePrice { get; set; }
     public string? BrandName { get; set; }
     public string? CategoryName { get; set; }
+    public string? PrimaryImageUrl { get; set; }
+    public string? PrimaryImageAlt { get; set; }
     public int TotalStock { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Fields matching Frontend Product type
+    public string Brand { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string PriceDisplay { get; set; } = string.Empty;
+    public string? Color { get; set; }
+    public string? Image { get; set; }
+    public List<string> Sizes { get; set; } = new();
+    public List<string> Gallery { get; set; } = new();
 }
 
 public class ProductDetailDto
@@ -54,6 +67,15 @@ public class ProductDetailDto
     public List<ProductVariantDto> Variants { get; set; } = new();
     public List<ReviewDto> Reviews { get; set; } = new();
     public double AverageRating { get; set; }
+
+    // Fields matching Frontend Product type
+    public string Brand { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string PriceDisplay { get; set; } = string.Empty;
+    public string? Color { get; set; }
+    public string? Image { get; set; }
+    public List<string> Sizes { get; set; } = new();
+    public List<string> Gallery { get; set; } = new();
 }
 
 public class ProductImageDto

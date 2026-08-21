@@ -29,7 +29,7 @@ export default function ShopCollection() {
   return (
     <section className="bg-[#fcfbf8] text-[#1a1714]">
       {/* ── Header block: grouped close, no dividers ── */}
-      <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-16 pt-16 md:pt-24 pb-0">
+      <div className="mx-auto max-w-[1400px] px-6 md:px-10 lg:px-16 pt-8 md:pt-12 pb-0">
         {/* <h1 className="font-serif text-[44px] md:text-[64px] leading-[1.02] tracking-[0.04em]">
           SHOP
         </h1>

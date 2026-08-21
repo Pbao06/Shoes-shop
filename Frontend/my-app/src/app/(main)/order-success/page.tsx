@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function OrderSuccessPage() {
+export const dynamic = 'force-dynamic'
+
+function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
 
@@ -39,5 +42,13 @@ export default function OrderSuccessPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <OrderSuccessContent />
+    </Suspense>
   )
 }

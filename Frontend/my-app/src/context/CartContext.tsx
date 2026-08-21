@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import type { StaticImageData } from 'next/image'
+import { useToast } from '@/components/ui/Toast'
 
 export type CartItem = {
   productId: number
@@ -29,6 +30,7 @@ const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const { showToast } = useToast()
 
   const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
     setItems((current) => {
@@ -44,7 +46,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...current, { ...item, quantity: 1 }]
     })
-  }, [])
+    showToast(`Đã thêm "${item.name}" vào giỏ hàng`)
+  }, [showToast])
 
   const increaseQuantity = useCallback((productId: number, size: string, color: string) => {
     setItems((current) =>

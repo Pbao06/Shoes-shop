@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import SearchPage from '@/components/main/search-page'
 
 export const metadata = {
@@ -7,5 +6,5 @@ export const metadata = {
 }
 
 export default function SearchRoute() {
-  return <Suspense fallback={<main className="min-h-screen bg-background" />}><SearchPage /></Suspense>
+  return <SearchPage />
 }

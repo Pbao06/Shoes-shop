@@ -28,6 +28,7 @@ public class ProductService : IProductService
                 Description = p.Description,
                 Price = p.Price,
                 SalePrice = p.SalePrice,
+                Color = p.Color,
                 IsActive = p.IsActive,
                 BrandId = p.BrandId,
                 CategoryId = p.CategoryId,
@@ -52,6 +53,7 @@ public class ProductService : IProductService
             Description = product.Description,
             Price = product.Price,
             SalePrice = product.SalePrice,
+            Color = product.Color,
             IsActive = product.IsActive,
             BrandId = product.BrandId,
             CategoryId = product.CategoryId,
@@ -74,6 +76,7 @@ public class ProductService : IProductService
             Description = dto.Description,
             Price = dto.Price,
             SalePrice = dto.SalePrice,
+            Color = dto.Color,
             BrandId = dto.BrandId,
             CategoryId = dto.CategoryId,
 
@@ -88,6 +91,7 @@ public class ProductService : IProductService
             Description=product.Description,
             Price=product.Price,
             SalePrice=product.SalePrice,
+            Color=product.Color,
             BrandId=product.BrandId,
             CategoryId=product.CategoryId,
             IsActive= product.IsActive,
@@ -113,6 +117,7 @@ public class ProductService : IProductService
         product.Description = dto.Description;
         product.Price = dto.Price;
         product.SalePrice = dto.SalePrice;
+        product.Color = dto.Color;
         product.IsActive = dto.IsActive;
         product.BrandId = dto.BrandId;
         product.CategoryId = dto.CategoryId;

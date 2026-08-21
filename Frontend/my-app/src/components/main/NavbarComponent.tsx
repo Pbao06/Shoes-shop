@@ -1,6 +1,10 @@
+"use client";
+
 // import { Link } from "@tanstack/react-router";
 import Link from "next/link";
 import { Search, ShoppingBag, User, type LucideIcon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useCart } from "@/context/CartContext";
 
 /**
  * Navbar — the primary top navigation for Maison.
@@ -44,8 +48,8 @@ export function Navbar() {
         {/* Right — icon cluster. Always visible. */}
         <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <IconButton href="/search" label="Search" icon={Search} />
-          <IconButton href="/cart" label="Cart" icon={ShoppingBag} />
-          <IconButton href="/login" label="Account" icon={User} />
+          <CartButton />
+          <UserDropdown />
         </div>
       </nav>
     </header>
@@ -96,6 +100,119 @@ function IconButton({
     >
       <Icon strokeWidth={1.4} className="h-[18px] w-[18px]" />
     </Link>
+  );
+}
+
+/**
+ * CartButton — the shopping bag icon with a small count badge.
+ * Shows the total number of items currently in the cart.
+ */
+function CartButton() {
+  const { itemCount } = useCart();
+
+  return (
+    <Link
+      href="/cart"
+      aria-label="Cart"
+      className="relative flex h-9 w-9 items-center justify-center text-[#1a1714]/80 transition-colors hover:text-[#1a1714] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8]"
+    >
+      <ShoppingBag strokeWidth={1.4} className="h-[18px] w-[18px]" />
+      {itemCount > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1a1714] px-1 text-[9px] font-medium leading-none text-[#fcfbf8]">
+          {itemCount > 99 ? "99+" : itemCount}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+/**
+ * UserDropdown — a borderless icon button with a dropdown menu.
+ * Shows Sign In / My Orders when unauthenticated; Account / My Orders / Logout when authenticated.
+ * Matches the navbar's quiet-luxury design language: sharp corners, hairline border, no shadow.
+ */
+function UserDropdown() {
+  const [open, setOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    setIsAuthenticated(!!token);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        aria-label="Account"
+        aria-haspopup="true"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex h-9 w-9 items-center justify-center text-[#1a1714]/80 transition-colors hover:text-[#1a1714] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8]"
+      >
+        <User strokeWidth={1.4} className="h-[18px] w-[18px]" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-44 border border-[#1a1714]/10 bg-[#fcfbf8] py-1">
+          {!isAuthenticated ? (
+            <>
+              <Link
+                href="/login"
+                className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+                onClick={() => setOpen(false)}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/orders"
+                className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+                onClick={() => setOpen(false)}
+              >
+                My Orders
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/account"
+                className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+                onClick={() => setOpen(false)}
+              >
+                Account
+              </Link>
+              <Link
+                href="/orders"
+                className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+                onClick={() => setOpen(false)}
+              >
+                My Orders
+              </Link>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("accessToken");
+                  setIsAuthenticated(false);
+                  setOpen(false);
+                }}
+                className="block w-full px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+              >
+                Logout
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
