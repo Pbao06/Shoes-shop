@@ -16,14 +16,16 @@ public class C_ProductController : BaseController
     }
 
     [HttpGet]
- public async Task<IActionResult> GetAll(
+  public async Task<IActionResult> GetAll(
     [FromQuery] string? category, 
     [FromQuery] string? sortBy, 
     [FromQuery] string? q, 
+    [FromQuery] int? categoryId, 
+    [FromQuery] int? brandId, 
     [FromQuery] int page = 1, 
     [FromQuery] int pageSize = 12)
 {
-    var products = await _productService.GetPublicProductsAsync(category, sortBy, q, page, pageSize);
+    var products = await _productService.GetPublicProductsAsync(category, sortBy, q, page, pageSize, categoryId, brandId);
     return Success(products, "Get Product Success");
 }
 

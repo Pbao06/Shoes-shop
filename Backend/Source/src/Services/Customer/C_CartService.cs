@@ -204,6 +204,7 @@ public class C_CartService : IC_CartService
                 UpdatedAt = DateTime.UtcNow
             };
             _context.Carts.Add(cart);
+            await _context.SaveChangesAsync();
         }
 
         return cart;

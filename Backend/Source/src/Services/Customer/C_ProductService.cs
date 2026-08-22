@@ -16,7 +16,7 @@ public class C_ProductService:IC_ProductService
         _context = context;
     }
 
-   public async Task<List<ProductPublicDto>> GetPublicProductsAsync(string? category = null, string? sortBy = null, string? keyword = null, int page = 1, int pageSize = 12)
+    public async Task<List<ProductPublicDto>> GetPublicProductsAsync(string? category = null, string? sortBy = null, string? keyword = null, int page = 1, int pageSize = 12, int? categoryId = null, int? brandId = null)
 {
     var query = _context.Products
         .AsNoTracking()
@@ -32,6 +32,17 @@ public class C_ProductService:IC_ProductService
     if (!string.IsNullOrEmpty(category) && category != "All")
     {
         query = query.Where(p => p.Category != null && p.Category.Name == category);
+    }
+
+    // 1.1 Lọc theo CategoryId / BrandId (từ trang Shop của Frontend)
+    if (categoryId.HasValue)
+    {
+        query = query.Where(p => p.CategoryId == categoryId.Value);
+    }
+
+    if (brandId.HasValue)
+    {
+        query = query.Where(p => p.BrandId == brandId.Value);
     }
 
     // 1.1 Tìm kiếm theo từ khóa (không phân biệt hoa thường) trên Name, Brand.Name, Category.Name
