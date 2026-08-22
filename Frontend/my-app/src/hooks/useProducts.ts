@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import productService, {
   GetProductsParams,
 } from "@/services/productService";
-import { Product } from "@/types/product";
+import { Product, ProductDetail } from "@/types/product";
 
 /**
  * useProducts — data hook for the Shop / product grid.
@@ -81,6 +81,7 @@ export function useProducts(initialParams: GetProductsParams = {}) {
     fetchProducts();
   }, [
     params.q,
+    params.category,
     params.categoryId,
     params.brandId,
     params.page,
@@ -154,5 +155,68 @@ export function useProducts(initialParams: GetProductsParams = {}) {
       setPageSize,
       refetch,
     ],
+  );
+}
+
+/**
+ * useProduct — detail hook for a single product.
+ *
+ * Wraps `productService.getProductById`, exposing the product detail plus
+ * loading/error state. The request is aborted when `id` changes or on unmount,
+ * and AbortError is silently ignored (so a stale detail can't overwrite the
+ * current one).
+ */
+export function useProduct(id: number) {
+  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fetchProduct = useCallback(async (productId: number) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await productService.getProductById(productId, {
+        signal: controller.signal,
+      });
+      setProduct(response.data);
+      return response.data;
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") {
+        return;
+      }
+      const message =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      setError(message);
+      throw err;
+    } finally {
+      if (abortRef.current === controller) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProduct(id);
+  }, [id, fetchProduct]);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  const refetch = useCallback(() => {
+    fetchProduct(id);
+  }, [fetchProduct, id]);
+
+  return useMemo(
+    () => ({ product, loading, error, refetch }),
+    [product, loading, error, refetch],
   );
 }

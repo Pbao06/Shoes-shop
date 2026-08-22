@@ -44,8 +44,13 @@ export const productService = {
     });
   },
 
-  getProductById(id: number): Promise<ApiResponse<ProductDetail>> {
-    return apiClient.get<ApiResponse<ProductDetail>>(`/api/products/${id}`);
+  getProductById(
+    id: number,
+    options?: { signal?: AbortSignal },
+  ): Promise<ApiResponse<ProductDetail>> {
+    return apiClient.get<ApiResponse<ProductDetail>>(`/api/products/${id}`, {
+      signal: options?.signal,
+    });
   },
 };
 

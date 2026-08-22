@@ -57,7 +57,7 @@ export default function ShopCollection() {
   // currently loaded (unlike deriving ids from the product list).
   const onCategoryClick = (label: string) => {
     setActiveCategory(label)
-    setFilters({ category: label === "All" ? undefined : label.toLowerCase() })
+    setFilters({ category: label === "All" ? undefined : label })
   }
 
   const sortLabel = sort === "Featured" ? "Featured" : sort.toUpperCase()
