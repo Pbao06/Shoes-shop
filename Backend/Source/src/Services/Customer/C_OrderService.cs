@@ -132,11 +132,11 @@ public class C_OrderService : IC_OrderService
                 // Tạo OrderItem: lấy ProductId từ variant để map đúng bảng Product
                 orderItems.Add(new OrderItem
                 {
-                    OrderId = order.Id,
-                    ProductId = variant.ProductId, // ← Lấy ProductId từ biến thể
+                    Order = order,
+                    ProductId = variant.ProductId,
                     ProductVariantId = variant.Id,
                     Quantity = cartItem.Quantity,
-                    UnitPrice = unitPrice,          // ← Snapshot giá bán tại thời điểm đặt
+                    UnitPrice = unitPrice,
                     TotalPrice = totalPrice
                 });
 
@@ -164,7 +164,7 @@ public class C_OrderService : IC_OrderService
 
             var payment = new Payment
             {
-                OrderId = order.Id,
+                Order = order,
                 PaymentMethod = paymentMethod,
                 Status = paymentMethod.Equals("COD", StringComparison.OrdinalIgnoreCase) ? "Pending" : "Paid",
                 Amount = order.TotalAmount,

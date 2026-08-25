@@ -3,16 +3,47 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, useRouter } from 'next/navigation'
-import { useOrders } from '@/context/OrderContext'
+import { useEffect, useState } from 'react'
+import { useOrderApi } from '@/hooks/useOrderApi'
+import { useAuth } from '@/context/AuthContext'
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { id } = params
-  const { getOrderById } = useOrders()
-  const order = getOrderById(id)
+  const { user } = useAuth()
+  const { getOrderById, loading, error } = useOrderApi(user?.id ?? 0)
+  const [order, setOrder] = useState<Awaited<ReturnType<typeof getOrderById>> | null>(null)
 
-  if (!order) {
-    notFound()
+  useEffect(() => {
+    const numericId = Number(id)
+    if (Number.isNaN(numericId)) {
+      notFound()
+      return
+    }
+
+    getOrderById(numericId).then((result) => {
+      if (!result) {
+        notFound()
+        return
+      }
+      setOrder(result)
+    })
+  }, [id, getOrderById])
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <p className="font-serif text-3xl">Loading…</p>
+      </main>
+    )
+  }
+
+  if (error || !order) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <p className="font-serif text-3xl text-red-600">{error ?? 'Order not found.'}</p>
+      </main>
+    )
   }
 
   return (
@@ -27,9 +58,13 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
         <div className="flex flex-col gap-8 border-b border-border pb-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="font-serif text-3xl">Order #{order.id}</h1>
+            <h1 className="font-serif text-3xl">Order #{order.orderNumber}</h1>
             <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Placed on {order.date}
+              Placed on {new Date(order.createdAt).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </p>
           </div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
@@ -43,18 +78,18 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             <div className="mt-6 divide-y divide-border border border-border">
               {order.items.map((item) => (
                 <div
-                  key={`${item.productId}-${item.size}-${item.color}`}
+                  key={`${item.productId}-${item.productVariantId}`}
                   className="flex gap-4 py-5 sm:gap-6"
                 >
                   <div className="relative size-24 shrink-0 overflow-hidden bg-muted sm:size-28">
-                    <Image src={item.image} alt={item.name} fill className="object-cover" sizes="112px" />
+                    <Image src={item.imageUrl ?? ''} alt={item.productName} fill className="object-cover" sizes="112px" />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <h3 className="font-serif text-xl">{item.name}</h3>
+                    <h3 className="font-serif text-xl">{item.productName}</h3>
                     <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                      Color: {item.color} · Size: {item.size} · Qty: {item.quantity}
+                      Size: {item.sizeName} · Qty: {item.quantity}
                     </p>
-                    <p className="mt-2 text-sm">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="mt-2 text-sm">${(item.unitPrice * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -70,29 +105,33 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>{order.shipping ? `$${order.shipping.toFixed(2)}` : 'Complimentary'}</span>
+                <span>{order.shippingFee ? `$${order.shippingFee.toFixed(2)}` : 'Complimentary'}</span>
               </div>
               <div className="flex justify-between border-t border-border pt-4 font-medium">
                 <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>${order.totalAmount.toFixed(2)}</span>
               </div>
             </div>
 
             <h3 className="mt-8 font-serif text-xl">Shipping Address</h3>
             <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-              <p>
-                {order.shippingAddress.firstName} {order.shippingAddress.lastName}
-              </p>
-              <p>{order.shippingAddress.address}</p>
-              <p>
-                {order.shippingAddress.city}, {order.shippingAddress.postalCode}
-              </p>
-              <p>{order.shippingAddress.country}</p>
-              <p>{order.shippingAddress.email}</p>
+              {order.address && (
+                <>
+                  <p>
+                    {order.address.recipientName}
+                  </p>
+                  <p>{order.address.street}</p>
+                  <p>
+                    {order.address.city}, {order.address.postalCode}
+                  </p>
+                  <p>{order.address.country}</p>
+                  {order.address.email && <p>{order.address.email}</p>}
+                </>
+              )}
             </div>
 
             <p className="mt-8 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-              Payment: {order.paymentMethod}
+              Payment: {order.paymentStatus}
             </p>
           </aside>
         </div>

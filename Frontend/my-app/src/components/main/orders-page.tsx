@@ -3,17 +3,36 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { useOrders, type Order, type OrderStatus } from '@/context/OrderContext'
+import { useOrderApi } from '@/hooks/useOrderApi'
+import { useAuth } from '@/context/AuthContext'
+import type { OrderDto, OrderStatus } from '@/types/order'
 
 const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] as const
 
 export default function OrdersPage() {
-  const { orders } = useOrders()
+  const { user } = useAuth()
+  const { orders, loading, error } = useOrderApi(user?.id ?? 0)
   const [filter, setFilter] = useState<(typeof filters)[number]>('All')
   const visibleOrders = useMemo(
     () => (filter === 'All' ? orders : orders.filter((order) => order.status === filter)),
     [filter, orders],
   )
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <p className="font-serif text-3xl">Loading…</p>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <p className="font-serif text-3xl text-red-600">{error}</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-background px-5 py-14 text-foreground sm:px-8 md:py-20 lg:px-16">
@@ -48,31 +67,37 @@ export default function OrdersPage() {
   )
 }
 
-function OrderCard({ order }: { order: Order }) {
-  const total = order.total
+function OrderCard({ order }: { order: OrderDto }) {
+  const total = order.totalAmount
 
   return (
     <article className="border border-border p-5 sm:p-7 lg:p-8">
       <header className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="font-serif text-2xl">Order #{order.id}</h2>
-          <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">{order.date}</p>
+          <h2 className="font-serif text-2xl">Order #{order.orderNumber}</h2>
+          <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            {new Date(order.createdAt).toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </p>
         </div>
         <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{order.status}</p>
       </header>
       <div className="divide-y divide-border">
         {order.items.map((item) => (
           <div
-            key={`${item.productId}-${item.size}-${item.color}`}
+            key={`${item.productId}-${item.productVariantId}`}
             className="flex gap-4 py-5 first:pt-6 sm:gap-6"
           >
             <div className="relative size-24 shrink-0 overflow-hidden bg-muted sm:size-28">
-              <Image src={item.image} alt={item.name} fill className="object-cover" sizes="112px" />
+              <Image src={item.imageUrl ?? ''} alt={item.productName} fill className="object-cover" sizes="112px" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center">
-              <h3 className="font-serif text-xl">{item.name}</h3>
+              <h3 className="font-serif text-xl">{item.productName}</h3>
               <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
-                Color: {item.color} · Size: {item.size} · Qty: {item.quantity}
+                Size: {item.sizeName} · Qty: {item.quantity}
               </p>
             </div>
           </div>

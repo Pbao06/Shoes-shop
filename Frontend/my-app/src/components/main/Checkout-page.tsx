@@ -4,54 +4,75 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
-import { useOrders, type ShippingAddress } from '@/context/OrderContext'
+import { useOrderApi } from '@/hooks/useOrderApi'
+import { useAuth } from '@/context/AuthContext'
+import { useModal } from '@/context/ModalContext'
+import type { CheckoutRequest } from '@/types/order'
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, clearCart } = useCart()
-  const { addOrder } = useOrders()
+  const { user } = useAuth()
+  const { openModal } = useModal()
+  const { createOrder, loading: isPlacingOrder, error: orderError } = useOrderApi(user?.id ?? 0)
   const [payment, setPayment] = useState('card')
   const [submitted, setSubmitted] = useState(false)
-  const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const shipping = subtotal >= 500 ? 0 : 20
   const total = subtotal + shipping
+
+  if (!user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <p className="font-serif text-3xl">Please log in to checkout</p>
+      </main>
+    )
+  }
+
   if (submitted) return null
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!items.length || isPlacingOrder) return
+
+    const formData = new FormData(event.currentTarget)
+
+    const checkoutRequest: CheckoutRequest = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
+      address: formData.get('address') as string,
+      city: formData.get('city') as string,
+      postalCode: formData.get('postalCode') as string,
+      country: formData.get('country') as string,
+      payment,
+    }
+
+    try {
+      const order = await createOrder(checkoutRequest)
+      clearCart()
+      setSubmitted(true)
+      router.push(`/order-success?orderId=${order.orderNumber}`)
+    } catch {
+      // error is surfaced by useOrderApi.error
+    }
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10 md:px-12 lg:px-20">
       <div className="mx-auto max-w-6xl">
-        {/* <header className="mb-14 flex items-center justify-between border-b border-border pb-6">
-          <Link href="/shop" className="font-serif text-2xl tracking-[0.2em]">ATELIER</Link>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Secure checkout</span>
-        </header> */}
         <div className="grid gap-16 lg:grid-cols-[1fr_380px]">
           <section>
             <p className="mb-3 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">01 / Delivery</p>
             <h1 className="mb-10 font-serif text-5xl font-normal">Checkout</h1>
+            {orderError && (
+              <p className="mb-6 text-sm text-red-600" role="alert">
+                {orderError}
+              </p>
+            )}
             <form
               id="checkout-form"
               className="space-y-8"
-              onSubmit={async (event) => {
-                event.preventDefault()
-                if (!items.length || isPlacingOrder) return
-
-                setIsPlacingOrder(true)
-                const formData = new FormData(event.currentTarget)
-
-                const address: ShippingAddress = {
-                  firstName: formData.get('firstName') as string,
-                  lastName: formData.get('lastName') as string,
-                  email: formData.get('email') as string,
-                  address: formData.get('address') as string,
-                  city: formData.get('city') as string,
-                  postalCode: formData.get('postalCode') as string,
-                  country: formData.get('country') as string,
-                }
-
-                const order = addOrder(items, shipping, address, payment)
-                clearCart()
-                setSubmitted(true)
-                router.push(`/order-success?orderId=${order.id}`)
-              }}
+              onSubmit={handleSubmit}
             >
               <div className="grid gap-5 sm:grid-cols-2">
                 <label className="text-xs uppercase tracking-widest">

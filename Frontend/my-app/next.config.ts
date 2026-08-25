@@ -1,17 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    dangerouslyAllowLocalIP: true, // <--- Thêm dòng này vào
     remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '5293', // Backend .NET
+        port: '5293',
         pathname: '/**',
       },
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '3000', // Frontend Next.js
+        port: '3000',
         pathname: '/**',
       },
     ],

@@ -1,8 +1,6 @@
 'use client'
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 // ── MOCK DATA (commented out, kept for reference) ───────────────────────────
 // import { getProductById, getRelatedProducts, type Product } from '@/data/products'
@@ -88,14 +86,25 @@ import { useState } from 'react'
 import { getRelatedProducts, products as mockProducts } from '@/data/products'
 import { useProduct } from '@/hooks/useProducts'
 import type { ProductDetail } from '@/types/product'
+import { useCartApi } from '@/hooks/useCartApi'
+import { useAuth } from '@/context/AuthContext'
+import { useModal } from '@/context/ModalContext'
 import { useCart } from '@/context/CartContext'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useState } from 'react'
+
+const DEFAULT_USER_ID = 1
 
 type ProductDetailProps = {
   id: string
 }
 
 export default function ProductDetail({ id }: ProductDetailProps) {
+  const router = useRouter()
   const { product, loading, error } = useProduct(Number(id))
+  const { user } = useAuth()
+  const { openModal } = useModal()
 
   if (loading) {
     return (
@@ -119,29 +128,65 @@ export default function ProductDetail({ id }: ProductDetailProps) {
     )
   }
 
-  return <ProductDetailContent product={product} />
+  return <ProductDetailContent product={product} userId={user?.id ?? DEFAULT_USER_ID} />
 }
 
-function ProductDetailContent({ product }: { product: ProductDetail }) {
+function ProductDetailContent({
+  product,
+  userId,
+}: {
+  product: ProductDetail
+  userId: number
+}) {
+  const router = useRouter()
   const [activeImage, setActiveImage] = useState(0)
   const [size, setSize] = useState('')
   const [open, setOpen] = useState('Description')
-  const { addToCart } = useCart()
+  const { user } = useAuth()
+  const { addToCart: addToCartApi, error: cartError } = useCartApi(userId)
+  const { addToCart: addToCartLocal } = useCart()
+  const { openModal } = useModal()
 
   // Related products: no real related-API yet, keep mock data.
   const relatedProducts = getRelatedProducts(mockProducts[0], 4)
-  const price = product.price
 
   function handleAddToCart() {
     if (!size) return
-    addToCart({
-      productId: product.id,
-      name: product.name,
-      brand: product.brand,
-      price,
-      image: product.image ?? product.gallery[0] ?? '',
-      size,
-      color: product.color ?? '',
+
+    if (!user) {
+      openModal({
+        title: 'Yêu cầu đăng nhập',
+        message: 'Bạn cần đăng nhập để thực hiện chức năng này.',
+        primaryLabel: 'Đăng nhập',
+        secondaryLabel: 'Hủy bỏ',
+        onPrimary: () => router.push('/login'),
+      })
+      return
+    }
+
+    const variant = product.variants.find((v) => v.sizeName === size)
+    if (!variant) {
+      openModal({
+        title: 'Không tìm thấy biến thể',
+        message: 'Vui lòng chọn size khác hoặc thử lại sau.',
+        primaryLabel: 'Đóng',
+      })
+      return
+    }
+
+    addToCartApi({
+      productVariantId: variant.id,
+      quantity: 1,
+    }).then(() => {
+      addToCartLocal({
+        productId: product.id,
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        image: product.image ?? product.gallery[0] ?? '',
+        size,
+        color: product.color ?? '',
+      })
     })
   }
 
@@ -200,6 +245,11 @@ function ProductDetailContent({ product }: { product: ProductDetail }) {
                 ))}
               </div>
             </div>
+            {cartError && (
+              <p className="mt-3 text-center text-[10px] uppercase tracking-[0.18em] text-[#b23a48]">
+                {cartError}
+              </p>
+            )}
             <button
               type="button"
               onClick={handleAddToCart}
