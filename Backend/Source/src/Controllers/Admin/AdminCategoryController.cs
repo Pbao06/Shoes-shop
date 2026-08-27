@@ -7,7 +7,7 @@ namespace src.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/categories")]
-public class AdminCategoryController : BaseController
+public class AdminCategoryController : AdminBaseController
 {
     private readonly ICategoryService _categoryService;
 

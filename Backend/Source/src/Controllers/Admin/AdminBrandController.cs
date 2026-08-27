@@ -7,7 +7,7 @@ namespace src.Controllers.Admin;
 
 [ApiController]
 [Route("api/admin/brands")]
-public class AdminBrandController : BaseController
+public class AdminBrandController : AdminBaseController
 {
     private readonly IBrandService _brandService;
 

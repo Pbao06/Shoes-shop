@@ -23,6 +23,7 @@ public class ProductDto
     public int BrandId { get; set; }
     public int CategoryId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string? PrimaryImageUrl { get; set; }
 }
 public class ProductPublicDto
 {
@@ -84,13 +85,33 @@ public class ProductImageDto
     public string ImageUrl { get; set; } = string.Empty;
     public string? AltText { get; set; }
     public bool IsPrimary { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class ProductVariantDto
 {
     public int Id { get; set; }
+    public int ProductId { get; set; }
     public int SizeId { get; set; }
     public string SizeName { get; set; } = string.Empty;
+    public string SKU { get; set; } = string.Empty;
+    public int StockQuantity { get; set; }
+    public decimal Price { get; set; }
+    public decimal? SalePrice { get; set; }
+}
+
+public class CreateProductVariantDto
+{
+    public int SizeId { get; set; }
+    public string SKU { get; set; } = string.Empty;
+    public int StockQuantity { get; set; }
+    public decimal Price { get; set; }
+    public decimal? SalePrice { get; set; }
+}
+
+public class UpdateProductVariantDto
+{
+    public int SizeId { get; set; }
     public string SKU { get; set; } = string.Empty;
     public int StockQuantity { get; set; }
     public decimal Price { get; set; }

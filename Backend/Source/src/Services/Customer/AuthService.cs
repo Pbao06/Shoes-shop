@@ -80,7 +80,7 @@ public class AuthService : IAuthService
             throw new UnauthorizedError("Tài khoản đã bị khóa.");
         }
 
-        var token = GenerateAccessToken(user);
+        var token = await GenerateAccessToken(user);
 
         return new LoginResponseDto
         {
@@ -91,7 +91,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public string GenerateAccessToken(User user)
+    public async Task<string> GenerateAccessToken(User user)
     {
         var claims = new List<Claim>
         {
@@ -99,6 +99,12 @@ public class AuthService : IAuthService
             new(ClaimTypes.Name, user.UserName ?? string.Empty),
             new(ClaimTypes.Email, user.Email ?? string.Empty)
         };
+
+        var roles = await _userManager.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "default-secret-key"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
