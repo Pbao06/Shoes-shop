@@ -8,6 +8,7 @@ import { useAdminBrands } from '@/hooks/admin';
 import { useAdminCategories } from '@/hooks/admin';
 import { adminProductService } from '@/services/admin';
 import { Package, Plus, Search, Trash2, Pencil, RefreshCcw } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 
 export default function AdminProductsPage() {
   const { products, loading, error, refetch } = useAdminProducts();
@@ -15,6 +16,7 @@ export default function AdminProductsPage() {
   const { categories } = useAdminCategories();
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number; name: string } | null>(null);
 
   const brandMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -207,19 +209,15 @@ export default function AdminProductsPage() {
                           >
                             <Pencil strokeWidth={1.4} className="h-4 w-4" />
                           </Link>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm(`Delete "${product.name}"? This action cannot be undone.`)) {
-                                handleDelete(product.id);
-                              }
-                            }}
-                            disabled={deletingId === product.id}
-                            className="flex h-8 w-8 items-center justify-center text-[#1a1714]/70 transition-colors hover:text-[#1a1714] disabled:opacity-40"
-                            aria-label="Delete product"
-                          >
-                            <Trash2 strokeWidth={1.4} className="h-4 w-4" />
-                          </button>
+                           <button
+                             type="button"
+                             onClick={() => setDeleteModal({ open: true, id: product.id, name: product.name })}
+                             disabled={deletingId === product.id}
+                             className="flex h-8 w-8 items-center justify-center text-[#1a1714]/70 transition-colors hover:text-[#1a1714] disabled:opacity-40"
+                             aria-label="Delete product"
+                           >
+                             <Trash2 strokeWidth={1.4} className="h-4 w-4" />
+                           </button>
                         </div>
                       </td>
                     </tr>
@@ -230,6 +228,21 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      {deleteModal && (
+        <Modal
+          isOpen={deleteModal.open}
+          onClose={() => setDeleteModal(null)}
+          title="Delete Product?"
+          message={`Are you sure you want to delete "${deleteModal.name}"? This action cannot be undone.`}
+          primaryLabel={deletingId === deleteModal.id ? 'Deleting...' : 'Delete'}
+          secondaryLabel="Cancel"
+          onPrimary={async () => {
+            await handleDelete(deleteModal.id);
+            setDeleteModal(null);
+          }}
+        />
+      )}
     </div>
   );
 }

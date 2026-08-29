@@ -4,6 +4,7 @@ using src.DTOs;
 using src.Middleware;
 using src.Models;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -82,12 +83,16 @@ public class AuthService : IAuthService
 
         var token = await GenerateAccessToken(user);
 
+        var roles = await _userManager.GetRolesAsync(user);
+        var role = roles.FirstOrDefault() ?? "Customer";
+
         return new LoginResponseDto
         {
             Id = user.Id,
             UserName = user.UserName ?? string.Empty,
             Email = user.Email ?? string.Empty,
-            Token = token
+            Token = token,
+            Role = role
         };
     }
 

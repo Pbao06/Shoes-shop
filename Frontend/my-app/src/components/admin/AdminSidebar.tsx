@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { label: 'Products', href: '/admin/products', icon: Package },
   { label: 'Categories', href: '/admin/categories', icon: FolderTree },
   { label: 'Brands', href: '/admin/brands', icon: Award },
-  { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+  { label: 'Orders', href: '/admin/order', icon: ShoppingBag },
 ] as const;
 
 export function AdminSidebar({ onNavigate }: { onNavigate?: () => void }) {

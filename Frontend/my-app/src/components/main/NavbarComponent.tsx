@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, ShoppingBag, User, type LucideIcon } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * Navbar — the primary top navigation for Maison.
@@ -133,13 +134,8 @@ function CartButton() {
  */
 function UserDropdown() {
   const [open, setOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    setIsAuthenticated(!!token);
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -150,6 +146,8 @@ function UserDropdown() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const isAdmin = user?.role === "Admin";
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -165,7 +163,7 @@ function UserDropdown() {
 
       {open && (
         <div className="absolute right-0 top-full mt-1 w-44 border border-[#1a1714]/10 bg-[#fcfbf8] py-1">
-          {!isAuthenticated ? (
+          {!user ? (
             <>
               <Link
                 href="/login"
@@ -184,13 +182,18 @@ function UserDropdown() {
             </>
           ) : (
             <>
-              <Link
-                href="/account"
-                className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
-                onClick={() => setOpen(false)}
-              >
-                Account
-              </Link>
+              <div className="px-4 py-2 text-[11px] font-medium text-[#1a1714] border-b border-[#1a1714]/10">
+                {user.userName}
+              </div>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
+                  onClick={() => setOpen(false)}
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/orders"
                 className="block px-4 py-2 text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
@@ -200,8 +203,7 @@ function UserDropdown() {
               </Link>
               <button
                 onClick={() => {
-                  localStorage.removeItem("accessToken");
-                  setIsAuthenticated(false);
+                  logout();
                   setOpen(false);
                 }}
                 className="block w-full px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.22em] text-[#1a1714]/75 transition-colors hover:text-[#1a1714]"
