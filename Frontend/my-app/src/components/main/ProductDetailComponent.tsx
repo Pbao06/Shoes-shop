@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 
 // ── MOCK DATA (commented out, kept for reference) ───────────────────────────
-// import { getProductById, getRelatedProducts, type Product } from '@/data/products'
+// import { getRelatedProducts, products as mockProducts } from '@/data/products'
 // import { useCart } from '@/context/CartContext'
 //
 // type ProductDetailProps = {
@@ -83,9 +83,9 @@ import { useRouter } from 'next/navigation'
 // }
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { getRelatedProducts, products as mockProducts } from '@/data/products'
-import { useProduct } from '@/hooks/useProducts'
-import type { ProductDetail } from '@/types/product'
+import { useEffect } from 'react'
+import { useProduct, useProducts } from '@/hooks/useProducts'
+import type { ProductDetail, Product } from '@/types/product'
 import { useCartApi } from '@/hooks/useCartApi'
 import { useAuth } from '@/context/AuthContext'
 import { useModal } from '@/context/ModalContext'
@@ -147,8 +147,17 @@ function ProductDetailContent({
   const { addToCart: addToCartLocal } = useCart()
   const { openModal } = useModal()
 
-  // Related products: no real related-API yet, keep mock data.
-  const relatedProducts = getRelatedProducts(mockProducts[0], 4)
+  const { products: relatedProductsRaw, loading: relatedLoading, error: relatedError, setFilters } = useProducts({ pageSize: 8 })
+
+  useEffect(() => {
+    if (product?.categoryId) {
+      setFilters({ categoryId: product.categoryId })
+    }
+  }, [product?.categoryId, setFilters])
+
+  const relatedProducts = relatedProductsRaw
+    .filter((p) => p.id !== product?.id)
+    .slice(0, 4)
 
   function handleAddToCart() {
     if (!size) return
@@ -295,19 +304,41 @@ function ProductDetailContent({
         </section>
         <section className="mt-28">
           <h2 className="mb-8 text-center font-serif text-4xl tracking-[-0.03em]">YOU MAY ALSO LIKE</h2>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4 lg:gap-6">
-            {relatedProducts.map((item) => (
-              <Link href={`/product/${item.id}`} key={item.id} className="group">
-                <div className="relative aspect-square overflow-hidden bg-secondary">
-                  <Image src={item.image} alt={item.name} fill sizes="25vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+          {relatedError ? (
+            <p className="py-10 text-center text-[13px] tracking-[0.02em] text-[#b23a48]">{relatedError}</p>
+          ) : relatedLoading && relatedProducts.length === 0 ? (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4 lg:gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-square bg-[#e9e4da]" />
+                  <div className="mt-4 h-3 w-2/3 bg-[#e9e4da] rounded" />
+                  <div className="mt-2 h-2 w-1/3 bg-[#e9e4da] rounded" />
                 </div>
-                <div className="flex justify-between gap-3 pt-4 text-sm">
-                  <span>{item.name}</span>
-                  <span>{item.price}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : relatedProducts.length === 0 ? (
+            <p className="py-10 text-center text-[13px] tracking-[0.02em] text-muted-foreground">No related products found.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4 lg:gap-6">
+              {relatedProducts.map((item) => (
+                <Link href={`/product/${item.id}`} key={item.id} className="group">
+                  <div className="relative aspect-square overflow-hidden bg-secondary">
+                    <Image
+                      src={item.image ?? item.gallery[0] ?? ''}
+                      alt={item.name}
+                      fill
+                      sizes="25vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex justify-between gap-3 pt-4 text-sm">
+                    <span>{item.name}</span>
+                    <span>{item.priceDisplay || `$${item.price}`}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

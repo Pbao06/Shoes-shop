@@ -1,5 +1,5 @@
-// Empty file to start analysis - will be filled in later
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using src.Data;
 using src.Models;
 using src.Services.Interface;
@@ -10,14 +10,31 @@ namespace src.Services.Customer;
 public class C_ProductService:IC_ProductService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public C_ProductService(ApplicationDbContext context)
+    public C_ProductService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private string? ResolveImageUrl(string? relativeUrl)
+    {
+        if (string.IsNullOrEmpty(relativeUrl))
+            return relativeUrl ?? string.Empty;
+
+        if (relativeUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return relativeUrl;
+
+        var request = _httpContextAccessor.HttpContext?.Request;
+        if (request == null)
+            return relativeUrl;
+
+        return $"{request.Scheme}://{request.Host}{relativeUrl}";
     }
 
     public async Task<List<ProductPublicDto>> GetPublicProductsAsync(string? category = null, string? sortBy = null, string? keyword = null, int page = 1, int pageSize = 12, int? categoryId = null, int? brandId = null)
-{
+    {
     var query = _context.Products
         .AsNoTracking()
         .Where(p => p.IsActive)
@@ -80,7 +97,7 @@ public class C_ProductService:IC_ProductService
         SalePrice = p.SalePrice,
         BrandName = p.Brand?.Name,
         CategoryName = p.Category?.Name,
-        PrimaryImageUrl = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+        PrimaryImageUrl = ResolveImageUrl(p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault()),
         PrimaryImageAlt = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.AltText).FirstOrDefault(),
         TotalStock = p.Variants.Sum(v => v.StockQuantity),
         IsActive = p.IsActive,
@@ -88,9 +105,9 @@ public class C_ProductService:IC_ProductService
         Brand = p.Brand?.Name ?? string.Empty,
         Category = p.Category?.Name ?? string.Empty,
         Color = p.Color,
-        Image = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+        Image = ResolveImageUrl(p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault()),
         Sizes = p.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
-        Gallery = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
+        Gallery = p.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).Select(ResolveImageUrl).ToList()
     }).ToList();
 }
 
@@ -129,7 +146,7 @@ public class C_ProductService:IC_ProductService
                 .Select(i => new ProductImageDto
                 {
                     Id = i.Id,
-                    ImageUrl = i.ImageUrl,
+                    ImageUrl = ResolveImageUrl(i.ImageUrl),
                     AltText = i.AltText,
                     IsPrimary = i.IsPrimary
                 })
@@ -162,9 +179,9 @@ public class C_ProductService:IC_ProductService
             Category = product.Category?.Name ?? string.Empty,
             PriceDisplay = FormatPrice(product.SalePrice ?? product.Price),
             Color = product.Color,
-            Image = product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault(),
+            Image = ResolveImageUrl(product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).FirstOrDefault()),
             Sizes = product.Variants.Select(v => v.Size?.Name ?? string.Empty).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList(),
-            Gallery = product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).ToList()
+            Gallery = product.Images.OrderByDescending(i => i.IsPrimary).Select(i => i.ImageUrl).Select(ResolveImageUrl).ToList()
         };
     }
 
@@ -173,5 +190,3 @@ public class C_ProductService:IC_ProductService
         return $"${price:0}";
     }
 }
-
-

@@ -89,6 +89,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -120,6 +122,7 @@ if (!string.IsNullOrEmpty(builder.Configuration["HttpsPort"]))
 {
     app.UseHttpsRedirection();
 }
+app.UseStaticFiles();
 app.UseCors("FrontendDev");
 app.UseAuthentication();
 app.UseAuthorization();

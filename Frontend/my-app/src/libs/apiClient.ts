@@ -135,8 +135,13 @@ async function request<T>(
 
   let payload: BodyInit | undefined;
   if (body !== undefined) {
-    headers.set("Content-Type", "application/json");
-    payload = JSON.stringify(body);
+    if (body instanceof FormData) {
+      payload = body;
+      headers.delete("Content-Type");
+    } else {
+      headers.set("Content-Type", "application/json");
+      payload = JSON.stringify(body);
+    }
   }
 
   const token = getAccessToken();

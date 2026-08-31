@@ -3,12 +3,13 @@ import { FeaturedCollections } from "@/components/main/FeaturedCollections";
 import { ProductCollection } from "@/components/main/ProductCollection";
 import { BrandStatement } from "@/components/main/Branch_Statement";
 import heroCampaign from "@/assets/hero-campaign.jpg";
+import banner from "@/assets/banner.jpeg";
 
 export default function HomePage() {
   return (
     <>
       <Hero
-        image={heroCampaign.src}
+        image={banner.src}
         eyebrow="NEW SEASON"
         heading="THE NEW COLLECTION"
         description="Step into the season with our latest arrivals — crafted for comfort, designed for every step."

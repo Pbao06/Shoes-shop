@@ -11,10 +11,27 @@ namespace src.Services.Admin;
 public class ProductService : IProductService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ProductService(ApplicationDbContext context)
+    public ProductService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private string? ResolveImageUrl(string? relativeUrl)
+    {
+        if (string.IsNullOrEmpty(relativeUrl))
+            return relativeUrl ?? string.Empty;
+
+        if (relativeUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return relativeUrl;
+
+        var request = _httpContextAccessor.HttpContext?.Request;
+        if (request == null)
+            return relativeUrl;
+
+        return $"{request.Scheme}://{request.Host}{relativeUrl}";
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -34,10 +51,13 @@ public class ProductService : IProductService
                 BrandId = p.BrandId,
                 CategoryId = p.CategoryId,
                 CreatedAt = p.CreatedAt,
-                PrimaryImageUrl = p.Images
-                    .Where(img => img.IsPrimary)
-                    .Select(img => img.ImageUrl)
-                    .FirstOrDefault()
+                PrimaryImageUrl = ResolveImageUrl(
+                    p.Images
+                        .OrderByDescending(img => img.IsPrimary)
+                        .ThenByDescending(img => img.CreatedAt)
+                        .Select(img => img.ImageUrl)
+                        .FirstOrDefault()
+                ),
             })
             .ToListAsync();
     }
@@ -63,10 +83,13 @@ public class ProductService : IProductService
             BrandId = product.BrandId,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
-            PrimaryImageUrl = product.Images
-                .Where(img => img.IsPrimary)
-                .Select(img => img.ImageUrl)
-                .FirstOrDefault()
+            PrimaryImageUrl = ResolveImageUrl(
+                product.Images
+                    .OrderByDescending(img => img.IsPrimary)
+                    .ThenByDescending(img => img.CreatedAt)
+                    .Select(img => img.ImageUrl)
+                    .FirstOrDefault()
+            ),
         };
     }
 
@@ -277,7 +300,7 @@ public class ProductService : IProductService
             .Select(img => new ProductImageDto
             {
                 Id = img.Id,
-                ImageUrl = img.ImageUrl,
+                ImageUrl = ResolveImageUrl(img.ImageUrl),
                 AltText = img.AltText,
                 IsPrimary = img.IsPrimary,
                 CreatedAt = img.CreatedAt
