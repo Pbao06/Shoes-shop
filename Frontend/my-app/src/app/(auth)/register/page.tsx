@@ -29,6 +29,7 @@ export default function RegisterPage() {
       confirmPassword: string;
     }) => {
       await register(data);
+      router.push("/login");
       
     },
     [register, router],

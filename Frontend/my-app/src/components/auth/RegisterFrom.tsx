@@ -93,7 +93,12 @@ export function RegisterForm({
       </p>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="mt-10 flex flex-col gap-7" noValidate>
+      <form
+        onSubmit={handleSubmit}
+        className="mt-10 flex flex-col gap-7"
+        noValidate
+        data-testid="register-form"
+      >
         {/* First + Last Name — two-column on wider screens, stacked on mobile */}
         <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
           <label className="block">
@@ -106,6 +111,7 @@ export function RegisterForm({
               required
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
+              data-testid="register-first-name"
               className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
             />
           </label>
@@ -120,6 +126,7 @@ export function RegisterForm({
               required
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
+              data-testid="register-last-name"
               className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
             />
           </label>
@@ -137,6 +144,7 @@ export function RegisterForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+            data-testid="register-email"
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </label>
@@ -153,6 +161,7 @@ export function RegisterForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            data-testid="register-password"
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </label>
@@ -169,20 +178,29 @@ export function RegisterForm({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
+            data-testid="register-confirm-password"
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </label>
 
         {/* Client-side validation error */}
         {validationError && (
-          <p className="text-[13px] leading-relaxed text-red-600" role="alert">
+          <p
+            className="text-[13px] leading-relaxed text-red-600"
+            role="alert"
+            data-testid="register-validation-error"
+          >
             {validationError}
           </p>
         )}
 
         {/* API error */}
         {error && (
-          <p className="text-[13px] leading-relaxed text-red-600" role="alert">
+          <p
+            className="text-[13px] leading-relaxed text-red-600"
+            role="alert"
+            data-testid="register-api-error"
+          >
             {error}
           </p>
         )}
@@ -191,22 +209,24 @@ export function RegisterForm({
         <button
           type="submit"
           disabled={isLoading}
+          data-testid="register-submit-button"
           className="mt-2 w-full rounded-none bg-[#1a1714] py-4 text-[12px] font-medium uppercase tracking-[0.2em] text-[#fcfbf8] transition-colors hover:bg-[#1a1714]/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Creating account..." : "Create Account"}
         </button>
       </form>
 
-      {/* Login link */}
-      <p className="mt-10 text-[13px] tracking-[0.01em] text-[#1a1714]/55">
-        Already have an account?{" "}
-        <a
-          href="/login"
-          className="text-[#1a1714] underline underline-offset-4 transition-opacity hover:opacity-70"
-        >
-          Sign in
-        </a>
-      </p>
+     {/* Login link */}
+<p className="mt-10 text-[13px] tracking-[0.01em] text-[#1a1714]/55">
+  Already have an account?{" "}
+  
+   <a href="/login"
+    className="text-[#1a1714] underline underline-offset-4 transition-opacity hover:opacity-70"
+    data-testid="register-login-link"
+  >
+    Sign in
+  </a>
+</p>
     </div>
   );
 }

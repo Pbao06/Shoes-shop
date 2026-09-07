@@ -36,8 +36,9 @@ public class ProductService : IProductService
 
     public async Task<List<ProductDto>> GetAllAsync()
     {
-        return await _context.Products
+        var products = await _context.Products
             .AsNoTracking()
+            .Include(p => p.Images)
             .Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -51,26 +52,32 @@ public class ProductService : IProductService
                 BrandId = p.BrandId,
                 CategoryId = p.CategoryId,
                 CreatedAt = p.CreatedAt,
-                PrimaryImageUrl = ResolveImageUrl(
-                    p.Images
-                        .OrderByDescending(img => img.IsPrimary)
-                        .ThenByDescending(img => img.CreatedAt)
-                        .Select(img => img.ImageUrl)
-                        .FirstOrDefault()
-                ),
+                PrimaryImageUrl = p.Images
+                    .OrderByDescending(img => img.IsPrimary)
+                    .ThenByDescending(img => img.CreatedAt)
+                    .Select(img => img.ImageUrl)
+                    .FirstOrDefault(),
             })
             .ToListAsync();
+
+        foreach (var product in products)
+        {
+            product.PrimaryImageUrl = ResolveImageUrl(product.PrimaryImageUrl);
+        }
+
+        return products;
     }
 
     public async Task<ProductDto?> GetByIdAsync(int id)
     {
         var product = await _context.Products
             .AsNoTracking()
+            .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product is null) return null;
 
-        return new ProductDto
+        var dto = new ProductDto
         {
             Id = product.Id,
             Name = product.Name,
@@ -83,14 +90,15 @@ public class ProductService : IProductService
             BrandId = product.BrandId,
             CategoryId = product.CategoryId,
             CreatedAt = product.CreatedAt,
-            PrimaryImageUrl = ResolveImageUrl(
-                product.Images
-                    .OrderByDescending(img => img.IsPrimary)
-                    .ThenByDescending(img => img.CreatedAt)
-                    .Select(img => img.ImageUrl)
-                    .FirstOrDefault()
-            ),
+            PrimaryImageUrl = product.Images
+                .OrderByDescending(img => img.IsPrimary)
+                .ThenByDescending(img => img.CreatedAt)
+                .Select(img => img.ImageUrl)
+                .FirstOrDefault(),
         };
+
+        dto.PrimaryImageUrl = ResolveImageUrl(dto.PrimaryImageUrl);
+        return dto;
     }
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
@@ -292,20 +300,21 @@ public class ProductService : IProductService
         if (product is null)
             throw new NotFoundError("Không tìm thấy sản phẩm.");
 
-        return await _context.ProductImages
+        var images = await _context.ProductImages
             .AsNoTracking()
             .Where(img => img.ProductId == productId)
             .OrderByDescending(img => img.IsPrimary)
             .ThenByDescending(img => img.CreatedAt)
-            .Select(img => new ProductImageDto
-            {
-                Id = img.Id,
-                ImageUrl = ResolveImageUrl(img.ImageUrl),
-                AltText = img.AltText,
-                IsPrimary = img.IsPrimary,
-                CreatedAt = img.CreatedAt
-            })
             .ToListAsync();
+
+        return images.Select(img => new ProductImageDto
+        {
+            Id = img.Id,
+            ImageUrl = ResolveImageUrl(img.ImageUrl),
+            AltText = img.AltText,
+            IsPrimary = img.IsPrimary,
+            CreatedAt = img.CreatedAt
+        }).ToList();
     }
 
     public async Task<ProductImageDto> UploadImageAsync(int productId, IFormFile file, string? altText)
