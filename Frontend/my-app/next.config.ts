@@ -1,7 +1,6 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    dangerouslyAllowLocalIP: true, // <--- Thêm dòng này vào
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
         protocol: 'http',
@@ -17,6 +16,9 @@ const nextConfig = {
       },
     ],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

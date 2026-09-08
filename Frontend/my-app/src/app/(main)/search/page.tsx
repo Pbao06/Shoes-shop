@@ -5,6 +5,8 @@ export const metadata = {
   description: 'Search the Atelier collection.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function SearchRoute() {
   return <SearchPage />
 }
