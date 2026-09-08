@@ -70,7 +70,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddDefaultTokenProviders();
 
 // Chuỗi kết nối chuẩn cho Aiven (giữ nguyên SslMode=Required)
-var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20487;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Required;AllowPublicKeyRetrieval=True;Pooling=false;";
+var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20483;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Required;AllowPublicKeyRetrieval=True;Pooling=false;";
 
 // FIX 1: Ép cứng phiên bản MySQL 8.0 thay vì dùng AutoDetect (Tránh lỗi bắt tay 0x0A / 0x0B)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
