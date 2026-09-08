@@ -74,7 +74,8 @@ MySqlConnectionStringBuilder csb = new MySqlConnectionStringBuilder(connectionSt
 {
     SslMode = MySqlSslMode.Required,
     AllowPublicKeyRetrieval = true,
-    SslCa = string.Empty
+    SslCa = string.Empty,
+    Pooling = false
 };
 connectionString = csb.ConnectionString;
 
