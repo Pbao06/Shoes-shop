@@ -138,14 +138,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Tự động Seed dữ liệu mẫu khi khởi chạy (bỏ qua nếu DB đã có sản phẩm)
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    await context.Database.EnsureCreatedAsync();
-    await DbSeeder.SeedAsync(context, roleManager, userManager);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+//     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+//     await context.Database.EnsureCreatedAsync();
+//     await DbSeeder.SeedAsync(context, roleManager, userManager);
+// }
 
 app.Run();
 
