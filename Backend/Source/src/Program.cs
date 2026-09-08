@@ -70,12 +70,8 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
 
 var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20487;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Required;AllowPublicKeyRetrieval=True;";
 
-MySqlConnectionStringBuilder csb = new MySqlConnectionStringBuilder(connectionString)
-{
-   SslMode = MySqlSslMode.Required,
-    AllowPublicKeyRetrieval = true
-};
-connectionString = csb.ConnectionString;
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 8))));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4, 8))));
@@ -104,13 +100,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IBrandService,BrandService>();
+builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 // customer api 
-builder.Services.AddScoped<IC_ProductService,C_ProductService>();
-builder.Services.AddScoped<IC_CartService,C_CartService>();
-builder.Services.AddScoped<IC_OrderService,C_OrderService>();
+builder.Services.AddScoped<IC_ProductService, C_ProductService>();
+builder.Services.AddScoped<IC_CartService, C_CartService>();
+builder.Services.AddScoped<IC_OrderService, C_OrderService>();
 // builder.Services.AddScoped<IC_CartItemService,C_CartItemService>();
 
 var app = builder.Build();
