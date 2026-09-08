@@ -27,9 +27,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendDev", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://shoes-shop-bice.vercel.app")
+        policy.WithOrigins(
+                "http://localhost:3000", 
+                "https://shoes-shop-bice.vercel.app",
+                "https://shoes-shop-git-main-pbao06s-projects.vercel.app"
+              )
               .AllowAnyHeader()
               .AllowAnyMethod()
+              .SetIsOriginAllowedToAllowWildcardSubdomains() // Cho phép các preview branch trên Vercel
               .AllowCredentials();
     });
 });
