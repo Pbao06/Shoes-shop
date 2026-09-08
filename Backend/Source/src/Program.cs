@@ -72,7 +72,7 @@ var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Po
 
 MySqlConnectionStringBuilder csb = new MySqlConnectionStringBuilder(connectionString)
 {
-    SslMode = MySqlSslMode.None,
+   SslMode = MySqlSslMode.Required,
     AllowPublicKeyRetrieval = true
 };
 connectionString = csb.ConnectionString;
