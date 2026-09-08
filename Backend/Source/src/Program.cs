@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("FrontendDev", policy =>
     {
         policy.WithOrigins(
-                "http://localhost:3000", 
+                "http://localhost:3000",
                 "https://shoes-shop-bice.vercel.app",
                 "https://shoes-shop-git-main-pbao06s-projects.vercel.app"
               )
@@ -73,7 +73,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20487;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Required;AllowPublicKeyRetrieval=True;Pooling=false;";
+var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20487;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Preferred;AllowPublicKeyRetrieval=True;Pooling=false;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
