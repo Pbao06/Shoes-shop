@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.OpenApi.Models;
 using src.Data;
 using src.Middleware;
@@ -12,8 +11,6 @@ using src.Services.AdminInterface;
 using src.Services.Admin;
 using src.Services.Customer;
 using src.Services.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using MySqlConnector;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,8 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Allow the Next.js frontend (http://localhost:3000) to call this API
-// cross-origin during development.
+// Cấu hình CORS cho Next.js Vercel
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendDev", policy =>
@@ -34,7 +30,7 @@ builder.Services.AddCors(options =>
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .SetIsOriginAllowedToAllowWildcardSubdomains() // Cho phép các preview branch trên Vercel
+              .SetIsOriginAllowedToAllowWildcardSubdomains()
               .AllowCredentials();
     });
 });
@@ -73,9 +69,12 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// Chuỗi kết nối chuẩn cho Aiven (giữ nguyên SslMode=Required)
 var connectionString = "Server=todoapp-mysql-phangia223-d258.l.aivencloud.com;Port=20487;Database=Shoes;Uid=avnadmin;Pwd=AVNS_s_UdKoxSIQUY-qsHeyI;SslMode=Required;AllowPublicKeyRetrieval=True;Pooling=false;";
+
+// FIX 1: Ép cứng phiên bản MySQL 8.0 thay vì dùng AutoDetect (Tránh lỗi bắt tay 0x0A / 0x0B)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, ServerVersion.Parse("8.0.30-mysql")));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -104,11 +103,11 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+
 // customer api 
 builder.Services.AddScoped<IC_ProductService, C_ProductService>();
 builder.Services.AddScoped<IC_CartService, C_CartService>();
 builder.Services.AddScoped<IC_OrderService, C_OrderService>();
-// builder.Services.AddScoped<IC_CartItemService,C_CartItemService>();
 
 var app = builder.Build();
 
@@ -121,30 +120,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Only redirect to HTTPS when an HTTPS port is actually configured.
-// When running with the "http" launch profile (no HTTPS port), this
-// middleware would fail to determine the redirect port and could
-// interfere with HTTP-only API calls from the frontend.
 if (!string.IsNullOrEmpty(builder.Configuration["HttpsPort"]))
 {
     app.UseHttpsRedirection();
 }
+
 app.UseStaticFiles();
 app.UseCors("FrontendDev");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Tự động Seed dữ liệu mẫu khi khởi chạy (bỏ qua nếu DB đã có sản phẩm)
-// using (var scope = app.Services.CreateScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-//     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-//     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-//     await context.Database.EnsureCreatedAsync();
-//     await DbSeeder.SeedAsync(context, roleManager, userManager);
-// }
+// FIX 2: Mở comment để tự động tạo bảng trong Database khi deploy lên Render
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    // Áp dụng các file Migration để tạo bảng (AspNetUsers, Products...)
+    context.Database.Migrate(); 
+    
+    // Nếu bạn muốn chạy data mẫu (Seed) thì mở comment 3 dòng dưới này ra
+    // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+    // var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    // await DbSeeder.SeedAsync(context, roleManager, userManager);
+}
 
 app.Run();
-
-
