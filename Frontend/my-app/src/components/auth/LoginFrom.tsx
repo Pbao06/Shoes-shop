@@ -89,14 +89,12 @@ export function LoginForm({
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </div>
-
         {/* API error */}
         {error && (
           <p className="text-[13px] leading-relaxed text-red-600" role="alert">
             {error}
           </p>
         )}
-
         {/* Primary action - rectangular, sharp corners, no shadow */}
         <button
           type="submit"

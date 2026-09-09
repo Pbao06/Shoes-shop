@@ -135,14 +135,15 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    
+    // 1. Xóa toàn bộ database cũ (CHỈ DÙNG KHI DEVELOPMENT)
+    context.Database.EnsureDeleted();
     // Áp dụng các file Migration để tạo bảng (AspNetUsers, Products...)
     context.Database.Migrate(); 
     
-    // Nếu bạn muốn chạy data mẫu (Seed) thì mở comment 3 dòng dưới này ra
-    // var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    // var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    // await DbSeeder.SeedAsync(context, roleManager, userManager);
+   // Nếu bạn muốn chạy data mẫu (Seed) thì mở comment 3 dòng dưới này ra
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    await DbSeeder.SeedAsync(context, roleManager, userManager);
 }
 
 app.Run();
