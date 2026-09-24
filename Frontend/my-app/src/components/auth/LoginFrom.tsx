@@ -62,6 +62,7 @@ export function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+             data-testid="login-email-input" 
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </label>
@@ -86,12 +87,13 @@ export function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            data-testid="login-password-input"
             className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent rounded-none px-0 py-3 text-[15px] text-[#1a1714] placeholder:text-[#1a1714]/30 focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
           />
         </div>
         {/* API error */}
         {error && (
-          <p className="text-[13px] leading-relaxed text-red-600" role="alert">
+          <p className="text-[13px] leading-relaxed text-red-600" role="alert" data-testid="login-error-message">
             {error}
           </p>
         )}
@@ -99,6 +101,7 @@ export function LoginForm({
         <button
           type="submit"
           disabled={isLoading}
+          data-testid="login-submit-button" 
           className="mt-2 w-full rounded-none bg-[#1a1714] py-4 text-[12px] font-medium uppercase tracking-[0.2em] text-[#fcfbf8] transition-colors hover:bg-[#1a1714]/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1a1714] focus-visible:ring-offset-2 focus-visible:ring-offset-[#fcfbf8] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Signing in..." : "Sign In"}
