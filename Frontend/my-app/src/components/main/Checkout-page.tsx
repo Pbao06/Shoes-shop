@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { useOrderApi } from '@/hooks/useOrderApi'
@@ -55,17 +55,22 @@ export default function CheckoutPage() {
     country: false,
   })
 
+  const valuesRef = useRef(values)
+  useEffect(() => {
+    valuesRef.current = values
+  }, [values])
+
   const shipping = subtotal >= 500 ? 0 : 20
   const total = subtotal + shipping
 
   const handleBlur = (field: keyof CheckoutValues) => {
     setTouched((prev) => ({ ...prev, [field]: true }))
-    const fieldErrors = validateCheckout(values)
+    const fieldErrors = validateCheckout(valuesRef.current)
     setErrors((prev) => ({ ...prev, [field]: fieldErrors[field] }))
   }
 
   const handleChange = (field: keyof CheckoutValues, value: string) => {
-    const updated = { ...values, [field]: value }
+    const updated = { ...valuesRef.current, [field]: value }
     setValues(updated)
     if (touched[field]) {
       const fieldErrors = validateCheckout(updated)
@@ -77,19 +82,20 @@ export default function CheckoutPage() {
     event.preventDefault()
     if (!items.length || isPlacingOrder) return
 
-    const newErrors = validateCheckout(values)
+    const currentValues = valuesRef.current
+    const newErrors = validateCheckout(currentValues)
     setErrors(newErrors)
     setTouched(allTouched)
     if (Object.values(newErrors).some(Boolean)) return
 
     const checkoutRequest: CheckoutRequest = {
-      firstName: values.firstName.trim(),
-      lastName: values.lastName.trim(),
-      email: values.email.trim(),
-      address: values.addressLine1.trim(),
-      city: values.city.trim(),
-      postalCode: values.postalCode.trim(),
-      country: values.country,
+      firstName: currentValues.firstName.trim(),
+      lastName: currentValues.lastName.trim(),
+      email: currentValues.email.trim(),
+      address: currentValues.addressLine1.trim(),
+      city: currentValues.city.trim(),
+      postalCode: currentValues.postalCode.trim(),
+      country: currentValues.country,
       payment,
     }
 
