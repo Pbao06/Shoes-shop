@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { useOrderApi } from '@/hooks/useOrderApi'
@@ -55,10 +55,7 @@ export default function CheckoutPage() {
     country: false,
   })
 
-  const valuesRef = useRef(values)
-  useEffect(() => {
-    valuesRef.current = values
-  }, [values])
+  const valuesRef = useRef<CheckoutValues>(initialValues)
 
   const shipping = subtotal >= 500 ? 0 : 20
   const total = subtotal + shipping
@@ -71,6 +68,7 @@ export default function CheckoutPage() {
 
   const handleChange = (field: keyof CheckoutValues, value: string) => {
     const updated = { ...valuesRef.current, [field]: value }
+    valuesRef.current = updated
     setValues(updated)
     if (touched[field]) {
       const fieldErrors = validateCheckout(updated)
