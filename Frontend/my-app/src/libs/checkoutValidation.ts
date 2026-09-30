@@ -13,14 +13,16 @@
 
 const REQUIRED_MESSAGE = 'This field is required.'
 
-/** Letters (incl. Latin diacritics), spaces, hyphens, apostrophes, and dots — for name fields. */
-const NAME_REGEX = /^[A-Za-zÀ-ÿ' .-]+$/
+/**
+ * Unicode property escapes (`\p{L}`, `\p{M}`) with the `u` flag accept any
+ * Unicode letter or combining mark — covering accented Latin, Cyrillic,
+ * Vietnamese (ư, ơ, đ, tone marks), CJK, Arabic, etc.
+ */
+const NAME_REGEX = /^[\p{L}\p{M} .'-]+$/u
 
-/** Letters (incl. Latin diacritics), spaces, hyphens, apostrophes, dots. */
-const CITY_REGEX = /^[A-Za-zÀ-ÿ .'-]+$/
+const CITY_REGEX = /^[\p{L}\p{M} .'-]+$/u
 
-/** Allows alphanumeric, spaces, dashes, dots, hashes — postal codes vary by country. */
-const POSTAL_CODE_REGEX = /^[A-Za-z0-9 .'#-]+$/
+const POSTAL_CODE_REGEX = /^[\p{L}\p{N} .'#-]+$/u
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -71,7 +73,7 @@ export function validateFirstName(value: string): string | undefined {
   if (required) return required
   const min = validateMinLength(value, 2, 'First name must be at least 2 characters.')
   if (min) return min
-  return validatePattern(value, NAME_REGEX, "First name may only contain letters, spaces, hyphens, apostrophes, and dots.");
+  return validatePattern(value, NAME_REGEX, "First name may only contain letters, spaces, hyphens, apostrophes, and dots.")
 }
 
 export function validateLastName(value: string): string | undefined {
@@ -79,13 +81,13 @@ export function validateLastName(value: string): string | undefined {
   if (required) return required
   const min = validateMinLength(value, 2, "Last name must be at least 2 characters.")
   if (min) return min
-  return validatePattern(value, NAME_REGEX, "Last name may only contain letters, spaces, hyphens, apostrophes, and dots.");
+  return validatePattern(value, NAME_REGEX, "Last name may only contain letters, spaces, hyphens, apostrophes, and dots.")
 }
 
 export function validateAddressLine1(value: string): string | undefined {
   const required = validateRequired(value)
   if (required) return required
-  return validateMinLength(value, 5, "Address must be at least 5 characters.");
+  return validateMinLength(value, 5, "Address must be at least 5 characters.")
 }
 
 export function validateCity(value: string): string | undefined {
@@ -93,7 +95,7 @@ export function validateCity(value: string): string | undefined {
   if (required) return required
   const min = validateMinLength(value, 2, "City must be at least 2 characters.")
   if (min) return min
-  return validatePattern(value, CITY_REGEX, "City may only contain letters, spaces, hyphens, apostrophes, and dots.");
+  return validatePattern(value, CITY_REGEX, "City may only contain letters, spaces, hyphens, apostrophes, and dots.")
 }
 
 export function validatePostalCode(value: string): string | undefined {
@@ -101,7 +103,7 @@ export function validatePostalCode(value: string): string | undefined {
   if (required) return required
   const trimmed = value.trim().replace(/\s/g, "")
   if (trimmed.length < 3) return "Postal code must be at least 3 characters."
-  return validatePattern(value, POSTAL_CODE_REGEX, "Postal code may only contain letters, numbers, spaces, hyphens, dots, and hash signs.");
+  return validatePattern(value, POSTAL_CODE_REGEX, "Postal code may only contain letters, numbers, spaces, hyphens, dots, and hash signs.")
 }
 
 export function validateCountry(value: string): string | undefined {
