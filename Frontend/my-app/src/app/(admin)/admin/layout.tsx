@@ -1,45 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { AdminHeader } from '@/components/admin/AdminHeader';
-import { ToastProvider } from '@/components/ui/Toast';
-
+/**
+ * Admin dashboard layout — passthrough.
+ *
+ * The full admin chrome (sidebar, header, toast provider) is already
+ * provided by the parent (admin)/layout.tsx, which imports AdminLayout
+ * and wraps ALL admin routes.  This layout previously *also* rendered
+ * AdminLayout, causing the chrome to be nested inside itself (double
+ * sidebar, double header, double ToastProvider).  By passing children
+ * through unchanged we preserve the shared layout without duplication.
+ */
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <ToastProvider>
-      <div className="flex min-h-screen bg-[#fcfbf8] text-[#1a1714]">
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-[#1a1714]/10 backdrop-blur-[2px] md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Sidebar — fixed on mobile, static on desktop */}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-200 ease-in-out md:static md:z-auto md:translate-x-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <AdminSidebar onNavigate={() => setSidebarOpen(false)} />
-        </div>
-
-        {/* Main content area */}
-        <div className="flex flex-1 flex-col min-w-0">
-          <AdminHeader onMenuToggle={() => setSidebarOpen(true)} />
-          <main className="flex-1">
-            {children}
-          </main>
-        </div>
-      </div>
-    </ToastProvider>
-  );
+  return <>{children}</>;
 }
