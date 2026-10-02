@@ -98,7 +98,16 @@ export function setAccessTokenProvider(provider: () => string | null): void {
 }
 
 function getAccessToken(): string | null {
-  return tokenProvider ? tokenProvider() : null;
+  if (tokenProvider) {
+    return tokenProvider();
+  }
+  // Fallback: read directly from localStorage when the provider hasn't been
+  // registered yet (e.g. before AuthProvider's useEffect runs on mount,
+  // while child hooks like useAdminProducts are already firing).
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("accessToken");
+  }
+  return null;
 }
 
 function buildUrl(
