@@ -10,6 +10,7 @@ import { useAdminCategories } from '@/hooks/admin';
 import { useAdminProductImages } from '@/hooks/admin';
 import type { AdminProduct, CreateAdminProduct, AdminProductImage } from '@/types/admin/products';
 import { ArrowLeft, Plus, Trash2, RefreshCcw } from 'lucide-react';
+import { validateProductForm, type ProductFormErrors } from '@/libs/adminProductValidation';
 
 export default function AdminEditProductPage() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function AdminEditProductPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [product, setProduct] = useState<AdminProduct | null>(null);
+  const [errors, setErrors] = useState<ProductFormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -67,31 +70,59 @@ export default function AdminEditProductPage() {
     };
   }, [productId]);
 
+  const validate = (): boolean => {
+    const newErrors = validateProductForm({
+      name,
+      slug,
+      description,
+      price,
+      salePrice,
+      color,
+      brandId,
+      categoryId,
+      isActive: isActive ? 'true' : 'false',
+    });
+    setErrors(newErrors);
+    setTouched({
+      name: true,
+      slug: true,
+      description: true,
+      price: true,
+      salePrice: true,
+      color: true,
+      brandId: true,
+      categoryId: true,
+      isActive: true,
+    });
+    return !Object.values(newErrors).some((e) => e !== undefined);
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const newErrors = validateProductForm({
+      name,
+      slug,
+      description,
+      price,
+      salePrice,
+      color,
+      brandId,
+      categoryId,
+      isActive: isActive ? 'true' : 'false',
+    });
+    setErrors(newErrors);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
+    if (!validate()) {
+      return;
+    }
+
     const parsedPrice = Number(price);
-    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      setError('Price must be a valid non-negative number.');
-      return;
-    }
-
     const parsedSalePrice = salePrice.trim() === '' ? null : Number(salePrice);
-    if (parsedSalePrice !== null && (Number.isNaN(parsedSalePrice) || parsedSalePrice < 0)) {
-      setError('Sale price must be a valid non-negative number.');
-      return;
-    }
-
-    if (!brandId) {
-      setError('Brand is required.');
-      return;
-    }
-
-    if (!categoryId) {
-      setError('Category is required.');
-      return;
-    }
 
     const payload: AdminProduct = {
       id: productId,
@@ -214,8 +245,15 @@ export default function AdminEditProductPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('name')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.name ? 'border-red-600' : ''}`}
+                data-testid="edit-name-input"
               />
+              {touched.name && errors.name && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.name}
+                </p>
+              )}
             </label>
 
             <label className="md:col-span-2">
@@ -226,8 +264,15 @@ export default function AdminEditProductPage() {
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('slug')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.slug ? 'border-red-600' : ''}`}
+                data-testid="edit-slug-input"
               />
+              {touched.slug && errors.slug && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.slug}
+                </p>
+              )}
             </label>
 
             <label className="md:col-span-2">
@@ -238,8 +283,15 @@ export default function AdminEditProductPage() {
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="mt-3 w-full border border-[#1a1714]/10 bg-transparent px-4 py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('description')}
+                className={`mt-3 w-full border border-[#1a1714]/10 bg-transparent px-4 py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.description ? 'border-red-600' : ''}`}
+                data-testid="edit-description-textarea"
               />
+              {touched.description && errors.description && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.description}
+                </p>
+              )}
             </label>
 
             <label>
@@ -253,8 +305,15 @@ export default function AdminEditProductPage() {
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('price')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.price ? 'border-red-600' : ''}`}
+                data-testid="edit-price-input"
               />
+              {touched.price && errors.price && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.price}
+                </p>
+              )}
             </label>
 
             <label>
@@ -267,8 +326,15 @@ export default function AdminEditProductPage() {
                 step="0.01"
                 value={salePrice}
                 onChange={(e) => setSalePrice(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('salePrice')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.salePrice ? 'border-red-600' : ''}`}
+                data-testid="edit-sale-price-input"
               />
+              {touched.salePrice && errors.salePrice && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.salePrice}
+                </p>
+              )}
             </label>
 
             <label>
@@ -279,8 +345,15 @@ export default function AdminEditProductPage() {
                 type="text"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('color')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-transparent py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.color ? 'border-red-600' : ''}`}
+                data-testid="edit-color-input"
               />
+              {touched.color && errors.color && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.color}
+                </p>
+              )}
             </label>
 
             <label>
@@ -291,7 +364,9 @@ export default function AdminEditProductPage() {
                 required
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('brandId')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.brandId ? 'border-red-600' : ''}`}
+                data-testid="edit-brand-select"
               >
                 <option value="">Select brand</option>
                 {brands.map((brand) => (
@@ -300,6 +375,11 @@ export default function AdminEditProductPage() {
                   </option>
                 ))}
               </select>
+              {touched.brandId && errors.brandId && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.brandId}
+                </p>
+              )}
             </label>
 
             <label className="md:col-span-2">
@@ -310,7 +390,9 @@ export default function AdminEditProductPage() {
                 required
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('categoryId')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.categoryId ? 'border-red-600' : ''}`}
+                data-testid="edit-category-select"
               >
                 <option value="">Select category</option>
                 {categories.map((category) => (
@@ -319,6 +401,11 @@ export default function AdminEditProductPage() {
                   </option>
                 ))}
               </select>
+              {touched.categoryId && errors.categoryId && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.categoryId}
+                </p>
+              )}
             </label>
 
             <label className="md:col-span-2">
@@ -328,11 +415,18 @@ export default function AdminEditProductPage() {
               <select
                 value={isActive ? 'true' : 'false'}
                 onChange={(e) => setIsActive(e.target.value === 'true')}
-                className="mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors"
+                onBlur={() => handleBlur('isActive')}
+                className={`mt-3 w-full border-0 border-b border-[#1a1714]/20 bg-[#fcfbf8] py-3 text-[13px] text-[#1a1714] focus:border-[#1a1714] focus:outline-none focus:ring-0 transition-colors ${errors.isActive ? 'border-red-600' : ''}`}
+                data-testid="edit-status-select"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
+              {touched.isActive && errors.isActive && (
+                <p className="mt-1 text-[12px] text-red-600" role="alert">
+                  {errors.isActive}
+                </p>
+              )}
             </label>
           </div>
 

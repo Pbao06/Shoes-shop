@@ -160,7 +160,7 @@ export default function AdminProductsPage() {
                   const categoryName = categoryMap.get(product.categoryId) ?? `#${product.categoryId}`;
 
                   return (
-                    <tr key={product.id} className="transition-colors hover:bg-[#1a1714]/[0.02]">
+                    <tr key={product.id} data-testid={`product-row-${product.id}`} className="transition-colors hover:bg-[#1a1714]/[0.02]">
                       <td className="px-6 py-4 md:px-8">
                         <div className="flex items-center gap-4">
                           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border border-[#1a1714]/10 bg-[#1a1714]/[0.02]">
